@@ -68,7 +68,7 @@ class BatchMkvToolbox:
         ui.tabWidget.setVisible(True)
         ui.welcomeFrame.setVisible(False)
 
-        for i in range(40):
+        for i in range(2):
             for audioLanguage in mkv_engine.available_audio_languages:
                 cb = TrackCheckbox()
                 cb.setText(audioLanguage + " - " + str(i))
@@ -80,7 +80,7 @@ class BatchMkvToolbox:
                 cb.stateChanged.connect(partial(self.doCheck, cb))
                 self.audioTracksFlowLayout.addWidget(cb)
 
-        for i in range(30):
+        for i in range(2):
             for subsLanguage in mkv_engine.available_subs_languages:
                 cb = TrackCheckbox()
                 cb.setText(subsLanguage)
@@ -100,15 +100,36 @@ class BatchMkvToolbox:
 
     def initCustomUi(self):
 
-        self.audioTracksFlowLayout = FlowLayout(ui.audioTracksScrollAreaWidget)
+        self.audioTracksFlowLayout = FlowLayout(ui.audioTracksScrollAreaWidget, orientation=Qt.Vertical)
+        self.audioTracksFlowLayout.widthChanged.connect(ui.audioTracksScrollAreaWidget.setMinimumWidth)
         self.audioTracksFlowLayout.setObjectName("audioTracksFlowLayout")
 
-        self.subsTracksFlowLayout = FlowLayout(ui.subTracksScrollAreaWidget)
+        self.subsTracksFlowLayout = FlowLayout(ui.subTracksScrollAreaWidget, orientation=Qt.Vertical)
+        self.subsTracksFlowLayout.widthChanged.connect(ui.subTracksScrollAreaWidget.setMinimumWidth)
         self.subsTracksFlowLayout.setObjectName("subsTracksFlowLayout")
 
+    def debug(self):
+        ui.tabWidget.setVisible(True)
+        ui.welcomeFrame.setVisible(False)
         
-
-
+        for i in range (10):
+            cb = TrackCheckbox()
+            cb.setText("audioLanguage - " + str(i))
+            cb.setChecked(True)
+            cb.setType("audio")
+            # Important here, since we are connecting the signals in a loop but
+            # need to pass the checkbox as a parameter, we use partial
+            cb.stateChanged.connect(partial(self.doCheck, cb))
+            self.audioTracksFlowLayout.addWidget(cb)
+        for i in range (17):
+            cb = TrackCheckbox()
+            cb.setText("subsLanguage - " + str(i))
+            cb.setChecked(True)
+            cb.setType("subs")
+            # Important here, since we are connecting the signals in a loop but
+            # need to pass the checkbox as a parameter, we use partial
+            cb.stateChanged.connect(partial(self.doCheck, cb))
+            self.subsTracksFlowLayout.addWidget(cb)
 
 
 if __name__ == "__main__":
@@ -133,6 +154,8 @@ if __name__ == "__main__":
     mkv_engine.scanFinished.connect(batchMkvToolbox.onScanCompleted)
 
     ui.pushButton.clicked.connect(lambda: ui.tabWidget.setEnabled(False))
+
+    batchMkvToolbox.debug()
 
     MainWindow.show()
     sys.exit(app.exec_())
