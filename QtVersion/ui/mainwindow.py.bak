@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'mainwindow.ui'
+#
+# Created by: PyQt5 UI code generator 5.10.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(800, 600)
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setAutoFillBackground(False)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout_2 = QtWidgets.QGridLayout()
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.testFrame = QtWidgets.QFrame(self.centralwidget)
+        self.testFrame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.testFrame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.testFrame.setObjectName("testFrame")
+        self.gridLayout_3 = QtWidgets.QGridLayout(self.testFrame)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem, 3, 1, 1, 1)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem1, 0, 1, 1, 1)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_3.addItem(spacerItem2, 2, 0, 1, 1)
+        self.mkvParsingProgressbar = QtWidgets.QProgressBar(self.testFrame)
+        self.mkvParsingProgressbar.setMaximum(0)
+        self.mkvParsingProgressbar.setProperty("value", 0)
+        self.mkvParsingProgressbar.setTextVisible(False)
+        self.mkvParsingProgressbar.setObjectName("mkvParsingProgressbar")
+        self.gridLayout_3.addWidget(self.mkvParsingProgressbar, 2, 1, 1, 1)
+        self.welcomeLabel = QtWidgets.QLabel(self.testFrame)
+        self.welcomeLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.welcomeLabel.setObjectName("welcomeLabel")
+        self.gridLayout_3.addWidget(self.welcomeLabel, 1, 1, 1, 1)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_3.addItem(spacerItem3, 2, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.testFrame, 0, 0, 1, 1)
+        self.gridLayout.addLayout(self.gridLayout_2, 0, 0, 1, 1)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setObjectName("menubar")
+        self.menuTest = QtWidgets.QMenu(self.menubar)
+        self.menuTest.setObjectName("menuTest")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.actionOpen_file = QtWidgets.QAction(MainWindow)
+        self.actionOpen_file.setObjectName("actionOpen_file")
+        self.actionOpen_folder = QtWidgets.QAction(MainWindow)
+        self.actionOpen_folder.setObjectName("actionOpen_folder")
+        self.actionQuit = QtWidgets.QAction(MainWindow)
+        self.actionQuit.setObjectName("actionQuit")
+        self.actionClose_current_file_folder = QtWidgets.QAction(MainWindow)
+        self.actionClose_current_file_folder.setObjectName("actionClose_current_file_folder")
+        self.actionExit = QtWidgets.QAction(MainWindow)
+        self.actionExit.setObjectName("actionExit")
+        self.menuTest.addAction(self.actionOpen_file)
+        self.menuTest.addAction(self.actionOpen_folder)
+        self.menuTest.addAction(self.actionClose_current_file_folder)
+        self.menuTest.addSeparator()
+        self.menuTest.addAction(self.actionExit)
+        self.menubar.addAction(self.menuTest.menuAction())
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.welcomeLabel.setText(_translate("MainWindow", "Open a file or folder to begin"))
+        self.menuTest.setTitle(_translate("MainWindow", "File"))
+        self.actionOpen_file.setText(_translate("MainWindow", "Open file"))
+        self.actionOpen_folder.setText(_translate("MainWindow", "Open folder"))
+        self.actionQuit.setText(_translate("MainWindow", "Quit"))
+        self.actionClose_current_file_folder.setText(_translate("MainWindow", "Close current file / folder"))
+        self.actionExit.setText(_translate("MainWindow", "Exit"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
+
