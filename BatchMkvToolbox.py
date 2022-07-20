@@ -1,24 +1,20 @@
-from fileinput import filename
 from mkvEngine.mkvEngine import mkvEngine
 from ui.TrackCheckbox import TrackCheckbox
-from ui.mainwindow import Ui_MainWindow
 from ui.customLayout import FlowLayout
 
 from functools import partial
 
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QFileDialog
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QScrollArea, QLabel, QCheckBox, QHBoxLayout
 
-
-from PyQt5.QtCore import QPoint, QRect, QSize, Qt
+from PyQt5.QtCore import Qt
 
 from ui.customLayout.FlowLayout import FlowLayout
 
-import glob
-import os
 import sys
-import threading
+
+from ui.ui import UI
 
 
 class BatchMkvToolbox:
@@ -37,10 +33,10 @@ class BatchMkvToolbox:
             mkv_engine.reset()
 
             # Update the UI
-            ui.tabWidget.setVisible(False)
-            ui.welcomeFrame.setVisible(True)
-            ui.welcomeLabel.setText("Scanning tracks")
-            ui.mkvParsingProgressbar.setVisible(True)
+            MainWindow.tabWidget.setVisible(False)
+            MainWindow.welcomeFrame.setVisible(True)
+            MainWindow.welcomeLabel.setText("Scanning tracks")
+            MainWindow.mkvParsingProgressbar.setVisible(True)
 
             # Start scanning for tracks
             mkv_engine.startScan(self.sourcePath)
@@ -54,10 +50,10 @@ class BatchMkvToolbox:
             mkv_engine.reset()
 
             # Update the UI
-            ui.tabWidget.setVisible(False)
-            ui.welcomeFrame.setVisible(True)
-            ui.welcomeLabel.setText("Scanning tracks")
-            ui.mkvParsingProgressbar.setVisible(True)
+            MainWindow.tabWidget.setVisible(False)
+            MainWindow.welcomeFrame.setVisible(True)
+            MainWindow.welcomeLabel.setText("Scanning tracks")
+            MainWindow.mkvParsingProgressbar.setVisible(True)
 
             # Start scanning for tracks
             mkv_engine.startScan(self.sourcePath)
@@ -65,8 +61,8 @@ class BatchMkvToolbox:
     # onScanCompleted, populate UI
     def onScanCompleted(self):
         print("Scan completed")
-        ui.tabWidget.setVisible(True)
-        ui.welcomeFrame.setVisible(False)
+        MainWindow.tabWidget.setVisible(True)
+        MainWindow.welcomeFrame.setVisible(False)
 
         for audioLanguage in mkv_engine.available_audio_languages:
             cb = TrackCheckbox()
@@ -96,17 +92,17 @@ class BatchMkvToolbox:
 
     def initCustomUi(self):
 
-        self.audioTracksFlowLayout = FlowLayout(ui.audioTracksScrollAreaWidget, orientation=Qt.Vertical)
-        self.audioTracksFlowLayout.widthChanged.connect(ui.audioTracksScrollAreaWidget.setMinimumWidth)
+        self.audioTracksFlowLayout = FlowLayout(MainWindow.audioTracksScrollAreaWidget, orientation=Qt.Vertical)
+        self.audioTracksFlowLayout.widthChanged.connect(MainWindow.audioTracksScrollAreaWidget.setMinimumWidth)
         self.audioTracksFlowLayout.setObjectName("audioTracksFlowLayout")
 
-        self.subsTracksFlowLayout = FlowLayout(ui.subTracksScrollAreaWidget, orientation=Qt.Vertical)
-        self.subsTracksFlowLayout.widthChanged.connect(ui.subTracksScrollAreaWidget.setMinimumWidth)
+        self.subsTracksFlowLayout = FlowLayout(MainWindow.subTracksScrollAreaWidget, orientation=Qt.Vertical)
+        self.subsTracksFlowLayout.widthChanged.connect(MainWindow.subTracksScrollAreaWidget.setMinimumWidth)
         self.subsTracksFlowLayout.setObjectName("subsTracksFlowLayout")
 
     def debug(self):
-        ui.tabWidget.setVisible(True)
-        ui.welcomeFrame.setVisible(False)
+        MainWindow.tabWidget.setVisible(True)
+        MainWindow.welcomeFrame.setVisible(False)
 
         for i in range (10):
             cb = TrackCheckbox()
@@ -130,22 +126,22 @@ class BatchMkvToolbox:
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
+
+    MainWindow = UI()
     MainWindow.show()
     batchMkvToolbox = BatchMkvToolbox()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    ui.tabWidget.setVisible(False)
-    ui.mkvParsingProgressbar.setVisible(False)
 
-    ui.actionOpen_file.triggered.connect(lambda: batchMkvToolbox.openFileNameDialog())
-    ui.actionOpen_folder.triggered.connect(lambda: batchMkvToolbox.openFolderDialog())
-    ui.actionExit.triggered.connect(lambda: sys.exit(app.exec_()))
+    MainWindow.tabWidget.setVisible(False)
+    MainWindow.mkvParsingProgressbar.setVisible(False)
+
+    MainWindow.actionOpen_file.triggered.connect(lambda: batchMkvToolbox.openFileNameDialog())
+    MainWindow.actionOpen_folder.triggered.connect(lambda: batchMkvToolbox.openFolderDialog())
+    MainWindow.actionExit.triggered.connect(lambda: sys.exit(app.exec_()))
 
     batchMkvToolbox.initCustomUi()
     mkv_engine = mkvEngine()
     mkv_engine.scanFinished.connect(batchMkvToolbox.onScanCompleted)
-    ui.pushButton.clicked.connect(lambda: ui.tabWidget.setEnabled(False))
+    MainWindow.pushButton.clicked.connect(lambda: MainWindow.tabWidget.setEnabled(False))
 
     #batchMkvToolbox.debug()
 
