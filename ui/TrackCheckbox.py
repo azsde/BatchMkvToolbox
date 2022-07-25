@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QCheckBox
+from PyQt6.QtWidgets import QCheckBox
 
 class TrackCheckbox(QCheckBox):
     def setType(self, type):

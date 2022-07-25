@@ -41,8 +41,8 @@
 ##
 #############################################################################
 
-from PyQt5.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal
-from PyQt5.QtWidgets import (QApplication, QLayout, QPushButton, QSizePolicy,
+from PyQt6.QtCore import QPoint, QRect, QSize, Qt, pyqtSignal
+from PyQt6.QtWidgets import (QApplication, QLayout, QPushButton, QSizePolicy,
         QWidget)
 
 
@@ -65,7 +65,7 @@ class FlowLayout(QLayout):
 
     widthChanged = pyqtSignal(int)
 
-    def __init__(self, parent=None, margin=0, spacing=-1, orientation=Qt.Horizontal):
+    def __init__(self, parent=None, margin=0, spacing=-1, orientation=Qt.Orientation.Horizontal):
         super(FlowLayout, self).__init__(parent)
 
         if parent is not None:
@@ -105,16 +105,16 @@ class FlowLayout(QLayout):
         return True
 
     def heightForWidth(self, width):
-        if (self.orientation == Qt.Horizontal):
+        if (self.orientation == Qt.Orientation.Horizontal):
             return self.doLayoutHorizontal(QRect(0, 0, width, 0), True)
-        elif (self.orientation == Qt.Vertical):
+        elif (self.orientation == Qt.Orientation.Vertical):
             return self.doLayoutVertical(QRect(0, 0, width, 0), True)
 
     def setGeometry(self, rect):
         super(FlowLayout, self).setGeometry(rect)
-        if (self.orientation == Qt.Horizontal):
+        if (self.orientation == Qt.Orientation.Horizontal):
             self.doLayoutHorizontal(rect, False)
-        elif (self.orientation == Qt.Vertical):
+        elif (self.orientation == Qt.Orientation.Vertical):
             self.doLayoutVertical(rect, False)
 
     def sizeHint(self):
@@ -140,8 +140,8 @@ class FlowLayout(QLayout):
         for item in self.itemList:
             wid = item.widget()
             # Space X and Y is item spacing horizontally and vertically
-            spaceX = self.spacing() + wid.style().layoutSpacing(QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Horizontal)
-            spaceY = self.spacing() + wid.style().layoutSpacing(QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Vertical)
+            spaceX = self.spacing() + wid.style().layoutSpacing(QSizePolicy.ControlType.PushButton, QSizePolicy.ControlType.PushButton, Qt.Orientation.Horizontal)
+            spaceY = self.spacing() + wid.style().layoutSpacing(QSizePolicy.ControlType.PushButton, QSizePolicy.ControlType.PushButton, Qt.Orientation.Vertical)
             # Determine the coordinate we want to place the item at
             # It should be placed at : initial coordinate of the rect + width of the item + spacing
             nextX = x + item.sizeHint().width() + spaceX
@@ -179,8 +179,8 @@ class FlowLayout(QLayout):
         for item in self.itemList:
             wid = item.widget()
             # Space X and Y is item spacing horizontally and vertically
-            spaceX = self.spacing() + wid.style().layoutSpacing(QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Horizontal)
-            spaceY = self.spacing() + wid.style().layoutSpacing(QSizePolicy.PushButton, QSizePolicy.PushButton, Qt.Vertical)
+            spaceX = self.spacing() + wid.style().layoutSpacing(QSizePolicy.ControlType.PushButton, QSizePolicy.ControlType.PushButton, Qt.Orientation.Horizontal)
+            spaceY = self.spacing() + wid.style().layoutSpacing(QSizePolicy.ControlType.PushButton, QSizePolicy.ControlType.PushButton, Qt.Orientation.Vertical)
             # Determine the coordinate we want to place the item at
             # It should be placed at : initial coordinate of the rect + width of the item + spacing
             nextY = y + item.sizeHint().height() + spaceY

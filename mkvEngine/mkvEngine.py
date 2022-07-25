@@ -1,6 +1,6 @@
 from pymkv import MKVFile
 
-from PyQt5.QtCore import (QCoreApplication, QObject, QRunnable, QThread,
+from PyQt6.QtCore import (QCoreApplication, QObject, QRunnable, QThread,
                           QThreadPool, pyqtSignal)
 
 import glob
