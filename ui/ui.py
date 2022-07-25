@@ -12,6 +12,10 @@ class UI(QMainWindow):
         # Load the UI file
         uic.loadUi("ui/mainwindow.ui", self)
 
+        # Initial hide
+        self.tabWidget.setVisible(False)
+        self.mkvParsingProgressbar.setVisible(False)
+
         # Create and assign the flow layout
         self.audioTracksFlowLayout = FlowLayout(self.audioTracksScrollAreaWidget, orientation=Qt.Orientation.Vertical)
         self.audioTracksFlowLayout.widthChanged.connect(self.audioTracksScrollAreaWidget.setMinimumWidth)
@@ -19,6 +23,13 @@ class UI(QMainWindow):
         self.subsTracksFlowLayout = FlowLayout(self.subTracksScrollAreaWidget, orientation=Qt.Orientation.Vertical)
         self.subsTracksFlowLayout.widthChanged.connect(self.subTracksScrollAreaWidget.setMinimumWidth)
         self.subsTracksFlowLayout.setObjectName("subsTracksFlowLayout")
+
+        # Add right click actions
+        self.audioTracksScrollArea.addAction(self.actionSelect_all_audio_tracks)
+        self.audioTracksScrollArea.addAction(self.actionDeselect_all_audio_tracks)
+
+        self.subTracksScrollArea.addAction(self.actionSelect_all_subs_tracks)
+        self.subTracksScrollArea.addAction(self.actionDeselect_all_subs_tracks)
 
         self.pushButton.clicked.connect(lambda: self.tabWidget.setEnabled(False))
 
