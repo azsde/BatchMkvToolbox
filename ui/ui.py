@@ -16,22 +16,38 @@ class UI(QMainWindow):
         self.tabWidget.setVisible(False)
         self.mkvParsingProgressbar.setVisible(False)
 
-        # Create and assign the flow layout
-        self.audioTracksFlowLayout = FlowLayout(self.audioTracksScrollAreaWidget, orientation=Qt.Orientation.Vertical)
-        self.audioTracksFlowLayout.widthChanged.connect(self.audioTracksScrollAreaWidget.setMinimumWidth)
-        self.audioTracksFlowLayout.setObjectName("audioTracksFlowLayout")
-        self.subsTracksFlowLayout = FlowLayout(self.subTracksScrollAreaWidget, orientation=Qt.Orientation.Vertical)
-        self.subsTracksFlowLayout.widthChanged.connect(self.subTracksScrollAreaWidget.setMinimumWidth)
-        self.subsTracksFlowLayout.setObjectName("subsTracksFlowLayout")
+        # Create and assign the flow layouts
+        # Audio tracks
+        self.audioLanguagesFlowLayout = FlowLayout(self.audioLanguagesScrollAreaWidget, orientation=Qt.Orientation.Vertical)
+        self.audioLanguagesFlowLayout.widthChanged.connect(self.audioLanguagesScrollAreaWidget.setMinimumWidth)
+        self.audioLanguagesFlowLayout.setObjectName("audioLanguagesFlowLayout")
+        # Audio codecs
+        self.audioCodecsFlowLayout = FlowLayout(self.audioCodecsScrollAreaWidget, orientation=Qt.Orientation.Vertical)
+        self.audioCodecsFlowLayout.widthChanged.connect(self.audioCodecsScrollAreaWidget.setMinimumWidth)
+        self.audioCodecsFlowLayout.setObjectName("audioCodecsFlowLayout")
+        # Subs tracks
+        self.subsLanguagesFlowLayout = FlowLayout(self.subLanguagesScrollAreaWidget, orientation=Qt.Orientation.Vertical)
+        self.subsLanguagesFlowLayout.widthChanged.connect(self.subLanguagesScrollAreaWidget.setMinimumWidth)
+        self.subsLanguagesFlowLayout.setObjectName("subsLanguagesFlowLayout")
+        # Subs codecs
+        self.subsCodecsFlowLayout = FlowLayout(self.subsCodecsScrollAreaWidget, orientation=Qt.Orientation.Vertical)
+        self.subsCodecsFlowLayout.widthChanged.connect(self.subsCodecsScrollAreaWidget.setMinimumWidth)
+        self.subsCodecsFlowLayout.setObjectName("subsCodecsFlowLayout")
 
         # Add right click actions
-        self.audioTracksScrollArea.addAction(self.actionSelect_all_audio_tracks)
-        self.audioTracksScrollArea.addAction(self.actionDeselect_all_audio_tracks)
+        self.audioLanguagesScrollArea.addAction(self.actionSelect_all_audio_languages)
+        self.audioLanguagesScrollArea.addAction(self.actionDeselect_all_audio_languages)
 
-        self.subTracksScrollArea.addAction(self.actionSelect_all_subs_tracks)
-        self.subTracksScrollArea.addAction(self.actionDeselect_all_subs_tracks)
+        self.subLanguagesScrollArea.addAction(self.actionSelect_all_subs_languages)
+        self.subLanguagesScrollArea.addAction(self.actionDeselect_all_subs_languages)
 
-        self.pushButton.clicked.connect(lambda: self.tabWidget.setEnabled(False))
+        self.audioCodecsScrollArea.addAction(self.actionSelect_all_audio_codecs)
+        self.audioCodecsScrollArea.addAction(self.actionDeselect_all_audio_codecs)
+
+        self.subsCodecsScrollArea.addAction(self.actionSelect_all_subs_codecs)
+        self.subsCodecsScrollArea.addAction(self.actionDeselect_all_subs_codecs)
+
+        #self.processFilesPushButton.clicked.connect(lambda: self.tabWidget.setEnabled(False))
 
         self.resize(QtGui.QGuiApplication.primaryScreen().availableGeometry().size() * 0.65)
         self.center()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>849</width>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,19 +55,6 @@
            </property>
           </spacer>
          </item>
-         <item row="0" column="1">
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
          <item row="2" column="1">
           <widget class="QProgressBar" name="mkvParsingProgressbar">
            <property name="maximum">
@@ -78,16 +65,6 @@
            </property>
            <property name="textVisible">
             <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="welcomeLabel">
-           <property name="text">
-            <string>Open a file or folder to begin</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -103,6 +80,29 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item row="0" column="1">
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="welcomeLabel">
+           <property name="text">
+            <string>Open a file or folder to begin</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -120,47 +120,75 @@
           <property name="sizeConstraint">
            <enum>QLayout::SetDefaultConstraint</enum>
           </property>
-          <item row="4" column="2">
-           <widget class="QCheckBox" name="checkBox">
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
+          <item row="10" column="0" colspan="4">
+           <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="0">
+             <widget class="QLabel" name="remove_forced_subs_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Remove forced subtitles tracks</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="files_to_process_label">
+              <property name="text">
+               <string>Files to process</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="remove_track_containing_label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Remove tracks with title containing</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="checkBox">
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="remove_track_title_contains_qlinedit"/>
+            </item>
+            <item row="2" column="1">
+             <widget class="QScrollArea" name="scrollArea">
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_3">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>609</width>
+                 <height>69</height>
+                </rect>
+               </property>
+              </widget>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Remove forced subtitles tracks</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
-           <spacer name="verticalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>5</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_2">
+          <item row="7" column="0">
+           <widget class="QLabel" name="select_subs_language_label">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
               <horstretch>0</horstretch>
@@ -168,30 +196,46 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Subtitle Tracks</string>
+             <string>Select languages to keep</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
             </property>
            </widget>
           </item>
-          <item row="5" column="2">
-           <spacer name="verticalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="8" column="0">
+           <widget class="QScrollArea" name="subLanguagesScrollArea">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>5</height>
-             </size>
+            <property name="widgetResizable">
+             <bool>true</bool>
             </property>
-           </spacer>
+            <widget class="QWidget" name="subLanguagesScrollAreaWidget">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>387</width>
+               <height>69</height>
+              </rect>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+            </widget>
+           </widget>
           </item>
-          <item row="0" column="1">
+          <item row="2" column="1">
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -207,8 +251,42 @@
             </property>
            </spacer>
           </item>
-          <item row="3" column="2">
-           <spacer name="verticalSpacer_4">
+          <item row="7" column="2">
+           <widget class="QLabel" name="select_subs_codec_label">
+            <property name="text">
+             <string>Select subtitles format to keep</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="2" colspan="2">
+           <widget class="QScrollArea" name="subsCodecsScrollArea">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="subsCodecsScrollAreaWidget">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>392</width>
+               <height>69</height>
+              </rect>
+             </property>
+            </widget>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="audio_tracks_label">
+            <property name="text">
+             <string>Audio Tracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -223,40 +301,21 @@
             </property>
            </spacer>
           </item>
-          <item row="2" column="2">
-           <widget class="QScrollArea" name="subTracksScrollArea">
+          <item row="4" column="0" colspan="4">
+           <widget class="Line" name="line">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="contextMenuPolicy">
-             <enum>Qt::ActionsContextMenu</enum>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-            <property name="widgetResizable">
-             <bool>true</bool>
-            </property>
-            <widget class="QWidget" name="subTracksScrollAreaWidget">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>540</width>
-               <height>69</height>
-              </rect>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-            </widget>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label">
+          <item row="1" column="0">
+           <widget class="QLabel" name="select_audio_language_label">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
               <horstretch>0</horstretch>
@@ -264,15 +323,72 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Audio Tracks</string>
+             <string>Select languages to keep</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
             </property>
            </widget>
           </item>
-          <item row="0" column="2">
-           <widget class="QScrollArea" name="audioTracksScrollArea">
+          <item row="6" column="0">
+           <widget class="QLabel" name="subs_track_label">
+            <property name="text">
+             <string>Subtitles Tracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <spacer name="verticalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>5</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLabel" name="select_audio_codec_label">
+            <property name="text">
+             <string>Select audio codecs to keep</string>
+            </property>
+           </widget>
+          </item>
+          <item row="14" column="0" colspan="4">
+           <widget class="QPushButton" name="processFilesPushButton">
+            <property name="text">
+             <string>Process files</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QScrollArea" name="audioCodecsScrollArea">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="audioCodecsScrollAreaWidget">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>386</width>
+               <height>70</height>
+              </rect>
+             </property>
+            </widget>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QScrollArea" name="audioLanguagesScrollArea">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -294,13 +410,13 @@
             <property name="widgetResizable">
              <bool>true</bool>
             </property>
-            <widget class="QWidget" name="audioTracksScrollAreaWidget">
+            <widget class="QWidget" name="audioLanguagesScrollAreaWidget">
              <property name="geometry">
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>540</width>
-               <height>69</height>
+               <width>387</width>
+               <height>70</height>
               </rect>
              </property>
              <property name="maximumSize">
@@ -312,38 +428,18 @@
             </widget>
            </widget>
           </item>
-          <item row="8" column="0" colspan="4">
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>Process files</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Remove tracks with title containing</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="2" colspan="2">
-           <widget class="QLineEdit" name="lineEdit"/>
-          </item>
-          <item row="7" column="0">
-           <spacer name="verticalSpacer_6">
+          <item row="9" column="0">
+           <spacer name="verticalSpacer_4">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>40</height>
+              <height>10</height>
              </size>
             </property>
            </spacer>
@@ -366,7 +462,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>849</width>
      <height>22</height>
     </rect>
    </property>
@@ -386,7 +482,14 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionEdit_settings"/>
+   </widget>
    <addaction name="menuTest"/>
+   <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -420,12 +523,12 @@
     <string>About</string>
    </property>
   </action>
-  <action name="actionSelect_all_audio_tracks">
+  <action name="actionSelect_all_audio_languages">
    <property name="text">
     <string>Select all</string>
    </property>
   </action>
-  <action name="actionDeselect_all_audio_tracks">
+  <action name="actionDeselect_all_audio_languages">
    <property name="text">
     <string>Deselect all</string>
    </property>
@@ -433,12 +536,12 @@
     <string>Deselect all</string>
    </property>
   </action>
-  <action name="actionSelect_all_subs_tracks">
+  <action name="actionSelect_all_subs_languages">
    <property name="text">
     <string>Select all</string>
    </property>
   </action>
-  <action name="actionDeselect_all_subs_tracks">
+  <action name="actionDeselect_all_subs_languages">
    <property name="text">
     <string>Deselect all</string>
    </property>
@@ -447,6 +550,37 @@
    </property>
    <property name="iconVisibleInMenu">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionEdit_settings">
+   <property name="text">
+    <string>Edit settings</string>
+   </property>
+  </action>
+  <action name="actionSelect_all_audio_codecs">
+   <property name="text">
+    <string>Select all</string>
+   </property>
+  </action>
+  <action name="actionDeselect_all_audio_codecs">
+   <property name="text">
+    <string>Deselect all</string>
+   </property>
+   <property name="toolTip">
+    <string>Deselect all</string>
+   </property>
+  </action>
+  <action name="actionSelect_all_subs_codecs">
+   <property name="text">
+    <string>Select all</string>
+   </property>
+  </action>
+  <action name="actionDeselect_all_subs_codecs">
+   <property name="text">
+    <string>Deselect all</string>
+   </property>
+   <property name="toolTip">
+    <string>Deselect all</string>
    </property>
   </action>
  </widget>
