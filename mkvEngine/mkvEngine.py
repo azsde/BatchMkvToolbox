@@ -1,12 +1,8 @@
-from pymkv import MKVFile
-
-from PyQt6.QtCore import (QCoreApplication, QObject, QRunnable, QThread,
-                          QThreadPool, pyqtSignal)
-
-import glob
 import os
-import time
 
+from pathlib import Path
+from PyQt6.QtCore import (QObject, QThread, pyqtSignal)
+from pymkv import MKVFile
 from ui.TrackCheckbox import TrackCheckbox
 
 class mkvEngine(QObject):
@@ -23,17 +19,16 @@ class mkvEngine(QObject):
             self.path = path
 
         def startScanTracks(self):
-            # If this is a folder, scan every file in it (not recursive for now)
+            # If this is a folder, scan recursively every file in it
             if os.path.isdir(self.path):
-                os.chdir(self.path)
-                for file in glob.glob("*.mkv"):
-                 self.outer_instance.scanAvailableLanguages(file)
+                for file in list(Path(self.path).rglob("*.[mM][kK][vV]")):
+                    print("Found file: ", str(file.resolve()))
+                    self.outer_instance.scanAvailableLanguages(str(file.resolve()))
             elif os.path.isfile(self.path):
                 self.outer_instance.scanAvailableLanguages(self.path)
             else:
                 print("Not a file or folder")
                 return
-            count = 0
             self.finished.emit()
 
     def __init__(self):
@@ -83,6 +78,7 @@ class mkvEngine(QObject):
     def scanAvailableLanguages(self, file_path):
         print("Processing: " + file_path)
         mkv = MKVFile(file_path)
+        mkv.file_path = file_path
         self.files_to_process.append(mkv)
         tracks = mkv.get_track()
         for track in tracks:
