@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from PyQt6.QtCore import (QObject, QThread, pyqtSignal)
 from pymkv import MKVFile
-from ui.TrackCheckbox import TrackCheckbox
+from ui.myWidgets import TrackCheckbox
 
 class mkvEngine(QObject):
 
@@ -24,6 +24,8 @@ class mkvEngine(QObject):
                 for file in list(Path(self.path).rglob("*.[mM][kK][vV]")):
                     print("Found file: ", str(file.resolve()))
                     self.outer_instance.scanAvailableLanguages(str(file.resolve()))
+                # Reorder alphabetically
+
             elif os.path.isfile(self.path):
                 self.outer_instance.scanAvailableLanguages(self.path)
             else:
@@ -142,10 +144,14 @@ class mkvEngine(QObject):
             for track in tracks:
                 if (track.track_type == "audio"):
                     if track.language in self.audio_languages_to_remove or track.track_codec in self.audio_codecs_to_remove:
-                        print("Audio track" + track.language +  "(" + track.track_id + ")" +"matches removal condition")
+                        print("Audio track" + track.language +  "(" + str(track.track_id) + ")" +"matches removal condition")
                         track_ids_to_remove.append(track.track_id)
                 if (track.track_type == "subtitles"):
                     if track.language in self.subs_languages_to_remove or track.track_codec in self.subs_codecs_to_remove:
-                        print("Subs track" + track.language +  "(" + track.track_id + ")" +"matches removal condition")
+                        print("Subs track" + track.language +  "(" + str(track.track_id) + ")" +"matches removal condition")
                         track_ids_to_remove.append(track.track_id)
             print("MkvFile : ", mkv.file_path)
+            for track_id_to_remove in track_ids_to_remove:
+                mkv.remove_track(track_id_to_remove)
+            mkv.mux('C:\\Users\\aelkaim\\Downloads\\output-test.mkv')
+            print("Done")

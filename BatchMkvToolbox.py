@@ -1,11 +1,13 @@
 from mkvEngine.mkvEngine import mkvEngine
-from ui.TrackCheckbox import TrackCheckbox
+from settings.batchMkvToolboxSettings import batchMkvToolboxSettings
+from ui.PrefDialog import PrefDialog
+from ui.myWidgets import TrackCheckbox
 from ui.customLayout import FlowLayout
 
 from functools import partial
 
 from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QFileDialog, QApplication
+from PyQt6.QtWidgets import QFileDialog, QApplication, QLabel
 
 
 from PyQt6.QtCore import Qt
@@ -14,7 +16,7 @@ from ui.customLayout.FlowLayout import FlowLayout
 
 import sys
 
-from ui.ui import UI
+from ui.MainWindow import MainWindow
 
 class BatchMkvToolbox:
 
@@ -65,6 +67,9 @@ class BatchMkvToolbox:
         MainWindow.mkvParsingProgressbar.setVisible(False)
         MainWindow.welcomeLabel.setText("Open a file or folder to begin")
 
+    def openPreferencesDialog(self):
+        PrefDialog(settings).exec()
+
     # onScanCompleted, populate UI
     def onScanCompleted(self):
         print("Scan completed")
@@ -110,6 +115,13 @@ class BatchMkvToolbox:
             # need to pass the checkbox as a parameter, we use partial
             cb.stateChanged.connect(partial(self.onCheckboxStateChanged, cb))
             MainWindow.subsCodecsFlowLayout.addWidget(cb)
+
+        filesToProcess = []
+        for mkv in mkv_engine.files_to_process:
+            filesToProcess.append(mkv.file_path)
+        filesToProcess = sorted(filesToProcess)
+        for filepath in filesToProcess:
+            MainWindow.filesToProcessVerticalLayout.addWidget(QLabel(filepath))
 
     def onCheckboxStateChanged(self, checkbox):
         if checkbox.isChecked():
@@ -188,6 +200,9 @@ def connectUiSignals():
     MainWindow.actionOpen_folder.triggered.connect(lambda: batchMkvToolbox.openFolderDialog())
     # Close currently opened file/folder
     MainWindow.actionClose_current_file_folder.triggered.connect(lambda: batchMkvToolbox.closeCurrentSession())
+
+    MainWindow.actionPreferences.triggered.connect(lambda: batchMkvToolbox.openPreferencesDialog())
+
     # Exit
     MainWindow.actionExit.triggered.connect(lambda: sys.exit())
 
@@ -202,14 +217,17 @@ def connectUiSignals():
     MainWindow.actionDeselect_all_subs_codecs.triggered.connect(lambda: batchMkvToolbox.massCheckUncheck(TrackCheckbox.TYPE_SUBS_CODEC, False))
 
     # Process files
-    MainWindow.processFilesPushButton.clicked.connect(lambda: print("dadada"))
+    MainWindow.processFilesPushButton.clicked.connect(lambda: mkv_engine.startTracksRemoval())
 
 if __name__ == "__main__":
     # Create app
     app = QApplication(sys.argv)
     # Create UI and show it
-    MainWindow = UI()
+    MainWindow = MainWindow()
     MainWindow.show()
+
+    settings = batchMkvToolboxSettings()
+
     # Create BatchMkvToolBox instance
     batchMkvToolbox = BatchMkvToolbox()
     # Connect UI signals
@@ -217,5 +235,5 @@ if __name__ == "__main__":
     # Create MKV engine and connect it to the batch mkv toolbox
     mkv_engine = mkvEngine()
     mkv_engine.scanFinished.connect(batchMkvToolbox.onScanCompleted)
-    fakeContent()
+    #fakeContent()
     sys.exit(app.exec())

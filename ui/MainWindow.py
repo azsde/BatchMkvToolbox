@@ -5,9 +5,9 @@ from PyQt6.QtCore import Qt
 
 from ui.customLayout.FlowLayout import FlowLayout
 
-class UI(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
-        super(UI, self).__init__()
+        super(MainWindow, self).__init__()
 
         # Load the UI file
         uic.loadUi("ui/mainwindow.ui", self)

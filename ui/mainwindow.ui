@@ -169,11 +169,11 @@
              <widget class="QLineEdit" name="remove_track_title_contains_qlinedit"/>
             </item>
             <item row="2" column="1">
-             <widget class="QScrollArea" name="scrollArea">
+             <widget class="QScrollArea" name="filesToProcessScrollArea">
               <property name="widgetResizable">
                <bool>true</bool>
               </property>
-              <widget class="QWidget" name="scrollAreaWidgetContents_3">
+              <widget class="QWidget" name="filesToProcessScrollAreaWidgetContents">
                <property name="geometry">
                 <rect>
                  <x>0</x>
@@ -182,6 +182,7 @@
                  <height>69</height>
                 </rect>
                </property>
+               <layout class="QVBoxLayout" name="filesToProcessVerticalLayout"/>
               </widget>
              </widget>
             </item>
@@ -482,14 +483,14 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuSettings">
+   <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Settings</string>
+     <string>Edit</string>
     </property>
-    <addaction name="actionEdit_settings"/>
+    <addaction name="actionPreferences"/>
    </widget>
    <addaction name="menuTest"/>
-   <addaction name="menuSettings"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -552,9 +553,9 @@
     <bool>false</bool>
    </property>
   </action>
-  <action name="actionEdit_settings">
+  <action name="actionEdit">
    <property name="text">
-    <string>Edit settings</string>
+    <string>Edit</string>
    </property>
   </action>
   <action name="actionSelect_all_audio_codecs">
@@ -581,6 +582,11 @@
    </property>
    <property name="toolTip">
     <string>Deselect all</string>
+   </property>
+  </action>
+  <action name="actionPreferences">
+   <property name="text">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>
