@@ -119,7 +119,7 @@ class BatchMkvToolbox:
 
         filesToProcess = []
         for mkv in mkv_engine.files_to_process:
-            filesToProcess.append(mkv.file_path)
+            filesToProcess.append(mkv.filepath)
         filesToProcess = sorted(filesToProcess)
         for filepath in filesToProcess:
             MainWindow.filesToProcessVerticalLayout.addWidget(QLabel(filepath))
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     # Connect UI signals
     connectUiSignals()
     # Create MKV engine and connect it to the batch mkv toolbox
-    mkv_engine = mkvEngine()
+    mkv_engine = mkvEngine(settings)
     mkv_engine.scanFinished.connect(batchMkvToolbox.onScanCompleted)
     #fakeContent()
     sys.exit(app.exec())
