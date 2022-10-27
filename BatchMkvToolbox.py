@@ -50,6 +50,7 @@ class BatchMkvToolbox:
 
             # Reset the mkv engine
             mkv_engine.reset()
+            batchMkvToolbox.clear()
 
             # Update the UI
             MainWindow.tabWidget.setVisible(False)
@@ -148,6 +149,10 @@ class BatchMkvToolbox:
             MainWindow.audioLanguagesFlowLayout.itemAt(i).widget().deleteLater()
         for i in reversed(range(MainWindow.subsLanguagesFlowLayout.count())):
             MainWindow.subsLanguagesFlowLayout.itemAt(i).widget().deleteLater()
+        for i in reversed(range(MainWindow.audioCodecsFlowLayout.count())):
+            MainWindow.audioCodecsFlowLayout.itemAt(i).widget().deleteLater()
+        for i in reversed(range(MainWindow.subsCodecsFlowLayout.count())):
+            MainWindow.subsCodecsFlowLayout.itemAt(i).widget().deleteLater()
 
 # Method to simulate a MKV with lots of tracks
 def fakeContent():
