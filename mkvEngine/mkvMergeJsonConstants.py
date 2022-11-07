@@ -1,0 +1,13 @@
+# These are the "tags" as returned by 'mkvmerge -J' (json data)
+TYPE_TAG = "type"
+ID_TAG = "id"
+PROPERTIES_TAG = "properties"
+VIDEO_TYPE = "video"
+AUDIO_TYPE = "audio"
+SUBTITLES_TYPE = "subtitles"
+LANGUAGE_TAG = "language"
+CODEC_TAG = "codec"
+TRACK_NAME_TAG = "track_name"
+DEFAULT_TRACK_TAG = "default_track"
+FORCED_TRACK_TAG = "forced_track"
+TRACKS_TAG = "tracks"
