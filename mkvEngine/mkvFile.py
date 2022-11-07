@@ -165,8 +165,6 @@ class mkvFile():
 
         self.audioTracksToRemove.clear()
         self.subtitlesTracksToRemove.clear()
-        print("Not implemented yet.")
-
 
 class myMkvTrack():
     """Class representing a track from a mkvFile
