@@ -2,7 +2,7 @@ from PyQt6 import uic
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QFileDialog, QMessageBox
 
-from os import path
+from pathlib import Path
 
 from settings.batchMkvToolboxSettings import batchMkvToolboxSettings
 
@@ -50,27 +50,17 @@ class PrefDialog(QDialog):
     # Open a file browser to navigate to the folder containing mkvmerge binary
     # (Usually under the MkvToolNix installation folder)
     def browseForMkvMerge(self):
-        mkvMergeFolder = QFileDialog.getExistingDirectory(None,"Select a folder", self.mkvMergeLocationLineEdit.text())
-        self.verifyMkvMergePath(mkvMergeFolder)
 
-    # Verify the validity of the mkvmerge path
-    def verifyMkvMergePath(self, mkvMergeFolder):
-        if mkvMergeFolder:
-            print("Searching mkvmerge in path: ", mkvMergeFolder)
-            if sys.platform.startswith("win"):
-                mkvMergePath = mkvMergeFolder + "/mkvmerge.exe"
-            elif sys.platform.startswith("linux"):
-                mkvMergePath = mkvMergeFolder + "/mkvmerge"
-            if (path.exists(mkvMergePath)):
-                print("MkvMerge found")
-                self.mkvMergeLocationLineEdit.setText(mkvMergeFolder)
-                self.pendingChanges[batchMkvToolboxSettings.MKV_MERGE_LOCATION_SETTING] = mkvMergeFolder
-            else:
-                print("MkvMerge not found")
-                self.mkvMergeLocationLineEdit.clear()
-                QMessageBox.critical(self, "Error", "mkvmerge was not found at the specified path.",
-                    buttons=QMessageBox.StandardButton.Ok,
-                    defaultButton=QMessageBox.StandardButton.Ok)
+        if sys.platform.startswith("win"):
+            mergeMergeBinary = "mkvmerge.exe"
+        elif sys.platform.startswith("linux"):
+            mergeMergeBinary = "mkvmerge"
+        mkvMerge, _ = QFileDialog.getOpenFileName(None,"Select a folder", filter=mergeMergeBinary)
+
+        if (mkvMerge):
+            mkvMerge = str(Path(mkvMerge))
+            self.mkvMergeLocationLineEdit.setText(mkvMerge)
+            self.pendingChanges[batchMkvToolboxSettings.MKV_MERGE_LOCATION_SETTING] = mkvMerge
 
      # Open a file browser to navigate to the folder that will hold the output files
     def browseForCustomOutputFolder(self):
