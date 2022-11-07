@@ -37,8 +37,6 @@ class batchMkvToolboxSettings():
     OUTPUT_FILE_IN_REMUX_FOLDER = 1
     # Setting value to place the output file(s) in a custom folder
     OUTPUT_FILE_IN_CUSTOM_FOLDER = 2
-    # Setting value to to specify the custom folder
-    OUTPUT_FILE_CUSTOM_FOLDER = ""
 
     def __init__(self):
         self.config = configparser.ConfigParser()

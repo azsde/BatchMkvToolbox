@@ -65,9 +65,9 @@ class PrefDialog(QDialog):
      # Open a file browser to navigate to the folder that will hold the output files
     def browseForCustomOutputFolder(self):
         print("browseForCustomOutputFolder")
-        outputFolder = QFileDialog.getExistingDirectory(None,"Select a folder", self.customOutputFolderlineEdit.text())
+        outputFolder = Path(QFileDialog.getExistingDirectory(None,"Select a folder", self.customOutputFolderlineEdit.text()))
         if outputFolder:
-            self.customOutputFolderlineEdit.setText(outputFolder)
+            self.customOutputFolderlineEdit.setText(str(outputFolder))
             self.pendingChanges[batchMkvToolboxSettings.OUTPUT_FILE_CUSTOM_FOLDER_SETTING] = outputFolder
 
     # Callback for all radio buttons related to files operation
