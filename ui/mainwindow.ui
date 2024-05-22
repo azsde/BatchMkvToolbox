@@ -156,7 +156,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QCheckBox" name="checkBox">
+             <widget class="QCheckBox" name="remove_forced_subs_checkbox">
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
               </property>

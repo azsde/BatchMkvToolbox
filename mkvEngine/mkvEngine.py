@@ -43,6 +43,7 @@ class mkvEngine(QObject):
         super().__init__()
         self.settings = settings
         self.mkvMergePath = settings.getStrParam(batchMkvToolboxSettings.MKV_MERGE_LOCATION_SETTING)
+        self.remove_forced_tracks = settings.getBoolParam(batchMkvToolboxSettings.REMOVE_FORCED_TRACKS_SETTING)
         # Base folder for folder processing
         self.baseFolder = ""
         # List of files to be processed
@@ -145,6 +146,10 @@ class mkvEngine(QObject):
         print("Audio codecs : ", self.audio_codecs_to_remove)
         print("Subs codecs : ", self.subs_codecs_to_remove)
 
+    def setForcedTrackRemoval(self, remove_forced_tracks):
+        print(f"setForcedTrackRemoval : {remove_forced_tracks}")
+        self.remove_forced_tracks = remove_forced_tracks
+
     # TODO: move this to a dedicated thread
     def startTracksRemoval(self):
         for mkv in self.files_to_process:
@@ -154,14 +159,25 @@ class mkvEngine(QObject):
             subtitlesTracks = mkv.getTracksByType(SUBTITLES_TYPE)
 
             for audioTrack in audioTracks:
-                if audioTrack.language in self.audio_languages_to_remove or audioTrack.codec in self.audio_codecs_to_remove:
-                    print("Audio track" + audioTrack.language +  "(" + str(audioTrack.id) + ")" +"matches removal condition")
-                    track_ids_to_remove.append(audioTrack.id)
+                for audioTrack in audioTracks:
+                    if audioTrack.language in self.audio_languages_to_remove:
+                        print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: language {audioTrack.language}")
+                        track_ids_to_remove.append(audioTrack.id)
+                    elif audioTrack.codec in self.audio_codecs_to_remove:
+                        print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: codec {audioTrack.codec}")
+                        track_ids_to_remove.append(audioTrack.id)
 
             for subtitlesTrack in subtitlesTracks:
-                if subtitlesTrack.language in self.subs_languages_to_remove or subtitlesTrack.codec in self.subs_codecs_to_remove:
-                    print("Subs track" + subtitlesTrack.language +  "(" + str(subtitlesTrack.id) + ")" +"matches removal condition")
+                if subtitlesTrack.language in self.subs_languages_to_remove:
+                    print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: language {subtitlesTrack.language}")
                     track_ids_to_remove.append(subtitlesTrack.id)
+                elif subtitlesTrack.codec in self.subs_codecs_to_remove:
+                    print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: codec {subtitlesTrack.codec}")
+                    track_ids_to_remove.append(subtitlesTrack.id)
+                elif self.remove_forced_tracks and subtitlesTrack.forced:
+                    print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: forced track")
+                    track_ids_to_remove.append(subtitlesTrack.id)
+
 
             print("MkvFile : ", mkv.filepath)
             for track_id_to_remove in track_ids_to_remove:

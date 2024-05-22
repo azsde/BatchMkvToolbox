@@ -84,7 +84,7 @@ class BatchMkvToolbox:
             cb.setType(TrackCheckbox.TYPE_AUDIO_LANGUAGE)
             # Important here, since we are connecting the signals in a loop but
             # need to pass the checkbox as a parameter, we use partial
-            cb.stateChanged.connect(partial(self.onCheckboxStateChanged, cb))
+            cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.audioLanguagesFlowLayout.addWidget(cb)
 
         for audioCodecs in mkv_engine.available_audio_codecs:
@@ -94,7 +94,7 @@ class BatchMkvToolbox:
             cb.setType(TrackCheckbox.TYPE_AUDIO_CODEC)
             # Important here, since we are connecting the signals in a loop but
             # need to pass the checkbox as a parameter, we use partial
-            cb.stateChanged.connect(partial(self.onCheckboxStateChanged, cb))
+            cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.audioCodecsFlowLayout.addWidget(cb)
 
         for subsLanguage in mkv_engine.available_subs_languages:
@@ -104,7 +104,7 @@ class BatchMkvToolbox:
             cb.setType(TrackCheckbox.TYPE_SUBS_LANGUAGE)
             # Important here, since we are connecting the signals in a loop but
             # need to pass the checkbox as a parameter, we use partial
-            cb.stateChanged.connect(partial(self.onCheckboxStateChanged, cb))
+            cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.subsLanguagesFlowLayout.addWidget(cb)
 
         for subsCodec in mkv_engine.available_subs_codecs:
@@ -114,7 +114,7 @@ class BatchMkvToolbox:
             cb.setType(TrackCheckbox.TYPE_SUBS_CODEC)
             # Important here, since we are connecting the signals in a loop but
             # need to pass the checkbox as a parameter, we use partial
-            cb.stateChanged.connect(partial(self.onCheckboxStateChanged, cb))
+            cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.subsCodecsFlowLayout.addWidget(cb)
 
         filesToProcess = []
@@ -124,11 +124,11 @@ class BatchMkvToolbox:
         for filepath in filesToProcess:
             MainWindow.filesToProcessVerticalLayout.addWidget(QLabel(filepath))
 
-    def onCheckboxStateChanged(self, checkbox):
-        if checkbox.isChecked():
-            print("Checkbox " + checkbox.text() + "("+ checkbox.type +") is checked")
-        else:
-            print("Checkbox " + checkbox.text() + "("+ checkbox.type +") is unchecked")
+    def onTrackCheckboxStateChanged(self, checkbox):
+        #if checkbox.isChecked():
+        #    print("Checkbox " + checkbox.text() + "("+ checkbox.type +") is checked")
+        #else:
+        #    print("Checkbox " + checkbox.text() + "("+ checkbox.type +") is unchecked")
         mkv_engine.updateTracksToRemove(checkbox)
 
     def massCheckUncheck(self, type, isChecked):
@@ -168,7 +168,7 @@ def fakeContent():
         cb.setType(TrackCheckbox.TYPE_AUDIO_LANGUAGE)
         # Important here, since we are connecting the signals in a loop but
         # need to pass the checkbox as a parameter, we use partial
-        cb.stateChanged.connect(partial(batchMkvToolbox.onCheckboxStateChanged, cb))
+        cb.stateChanged.connect(partial(batchMkvToolbox.onTrackCheckboxStateChanged, cb))
         MainWindow.audioLanguagesFlowLayout.addWidget(cb)
     for i in range (10):
         cb = TrackCheckbox()
@@ -177,7 +177,7 @@ def fakeContent():
         cb.setType(TrackCheckbox.TYPE_SUBS_LANGUAGE)
         # Important here, since we are connecting the signals in a loop but
         # need to pass the checkbox as a parameter, we use partial
-        cb.stateChanged.connect(partial(batchMkvToolbox.onCheckboxStateChanged, cb))
+        cb.stateChanged.connect(partial(batchMkvToolbox.onTrackCheckboxStateChanged, cb))
         MainWindow.subsLanguagesFlowLayout.addWidget(cb)
     for i in range (10):
         cb = TrackCheckbox()
@@ -186,7 +186,7 @@ def fakeContent():
         cb.setType(TrackCheckbox.TYPE_AUDIO_CODEC)
         # Important here, since we are connecting the signals in a loop but
         # need to pass the checkbox as a parameter, we use partial
-        cb.stateChanged.connect(partial(batchMkvToolbox.onCheckboxStateChanged, cb))
+        cb.stateChanged.connect(partial(batchMkvToolbox.onTrackCheckboxStateChanged, cb))
         MainWindow.audioCodecsFlowLayout.addWidget(cb)
     for i in range (10):
         cb = TrackCheckbox()
@@ -195,7 +195,7 @@ def fakeContent():
         cb.setType(TrackCheckbox.TYPE_SUBS_CODEC)
         # Important here, since we are connecting the signals in a loop but
         # need to pass the checkbox as a parameter, we use partial
-        cb.stateChanged.connect(partial(batchMkvToolbox.onCheckboxStateChanged, cb))
+        cb.stateChanged.connect(partial(batchMkvToolbox.onTrackCheckboxStateChanged, cb))
         MainWindow.subsCodecsFlowLayout.addWidget(cb)
 
 # Method to connect all signals from the UI components
@@ -221,6 +221,8 @@ def connectUiSignals():
     MainWindow.actionSelect_all_subs_codecs.triggered.connect(lambda: batchMkvToolbox.massCheckUncheck(TrackCheckbox.TYPE_SUBS_CODEC, True))
     MainWindow.actionDeselect_all_subs_codecs.triggered.connect(lambda: batchMkvToolbox.massCheckUncheck(TrackCheckbox.TYPE_SUBS_CODEC, False))
 
+    MainWindow.remove_forced_subs_checkbox.stateChanged.connect(lambda state: mkv_engine.setForcedTrackRemoval(MainWindow.remove_forced_subs_checkbox.isChecked()))
+
     # Process files
     MainWindow.processFilesPushButton.clicked.connect(lambda: mkv_engine.startTracksRemoval())
 
@@ -232,6 +234,9 @@ if __name__ == "__main__":
     MainWindow.show()
 
     settings = batchMkvToolboxSettings()
+    
+    # Init the remove forced subs checkbox
+    MainWindow.remove_forced_subs_checkbox.setChecked(settings.getBoolParam(batchMkvToolboxSettings.REMOVE_FORCED_TRACKS_SETTING))
 
     # Create BatchMkvToolBox instance
     batchMkvToolbox = BatchMkvToolbox()

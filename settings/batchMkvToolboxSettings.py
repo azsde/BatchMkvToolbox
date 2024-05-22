@@ -24,6 +24,9 @@ class batchMkvToolboxSettings():
     # Name of the setting determining whether or not the folder structure should be preserved
     OUTPUT_FILE_PRESERVE_FOLDER_STRUCTURE_SETTING = "output_file_preserve_folder_structure_setting"
 
+    # Name of the setting determining whether or not forced tracks shall be removed
+    REMOVE_FORCED_TRACKS_SETTING = "remove_forced_tracks"
+
     # Setting value to leave the input file(s) in place after processing it
     INPUT_FILE_LEAVE_IN_PLACE = 0
     # Setting value to rename the input file(s) after processing it
@@ -63,7 +66,8 @@ class batchMkvToolboxSettings():
             batchMkvToolboxSettings.INPUT_FILE_SETTING : batchMkvToolboxSettings.INPUT_FILE_LEAVE_IN_PLACE, # Reset to INPUT_FILE_LEAVE_IN_PLACE
             batchMkvToolboxSettings.OUTPUT_FILE_SETTING : batchMkvToolboxSettings.OUTPUT_FILE_IN_SAME_FOLDER_AS_ORIGINAL,
             batchMkvToolboxSettings.OUTPUT_FILE_CUSTOM_FOLDER_SETTING : "",
-            batchMkvToolboxSettings.OUTPUT_FILE_PRESERVE_FOLDER_STRUCTURE_SETTING : False
+            batchMkvToolboxSettings.OUTPUT_FILE_PRESERVE_FOLDER_STRUCTURE_SETTING : False,
+            batchMkvToolboxSettings.REMOVE_FORCED_TRACKS_SETTING : False
         }
 
         with open(batchMkvToolboxSettings.CONFIG_FILE, 'w') as configfile:
