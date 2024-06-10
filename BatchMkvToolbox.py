@@ -171,8 +171,21 @@ class BatchMkvToolbox:
         progress = tuple[1]
 
         widget = self.files_progress_bars[mkv]
+        widget.set_status_icon(MkvFileWidget.STATUS_IN_PROGRESS)
         widget.update_progress(progress)
-        #print(f"Todo : Update progress UI: {tuple[0].filepath} - {tuple[1]}%")
+
+    def handle_remux_ended(self, tuple):
+        mkv = tuple[0]
+        status_code = tuple[1]
+
+        try:
+            widget = self.files_progress_bars[mkv]
+            if status_code == 0:
+                widget.set_status_icon(MkvFileWidget.STATUS_DONE)
+            else:
+                widget.set_status_icon(MkvFileWidget.STATUS_ERROR)
+        except KeyError:
+            pass
 
     def output_file_alread_exist_prompt(self, tuple):
         mkvFile = tuple[0]
@@ -180,8 +193,10 @@ class BatchMkvToolbox:
         outputPath = self.openExistingFileDialog(mkvFile, initial_output_file, settings.getIntParam(batchMkvToolboxSettings.OUTPUT_FILE_SETTING))
         if outputPath:
             mkv_engine.resolve_output_conflict(mkvFile, outputPath)
+        else:
+            widget = self.files_progress_bars[mkvFile]
+            widget.set_status_icon(MkvFileWidget.STATUS_WARNING)
         print(f"Output path on conflict: {outputPath}")
-
 
     # When a file already exist at the output location, open a dialog to ask the user what do to.
     # Parameters:
@@ -307,6 +322,7 @@ if __name__ == "__main__":
     mkv_engine = mkvEngine(settings)
     mkv_engine.scanFinished.connect(batchMkvToolbox.onScanCompleted)
     mkv_engine.fileRemuxProgress.connect(batchMkvToolbox.update_remux_progress)
+    mkv_engine.fileRemuxFinished.connect(batchMkvToolbox.handle_remux_ended)
     mkv_engine.outputFileAlreadyExist.connect(batchMkvToolbox.output_file_alread_exist_prompt)
     #fakeContent()
     sys.exit(app.exec())

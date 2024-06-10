@@ -161,10 +161,6 @@ class mkvFile():
         print("MkvMerge cmd: ", mkvMergeCommand)
 
         # Call mkvMerge
-        # TODO : parse the progress and figure a way to display it somewere
-        output = subprocess.check_output(mkvMergeCommand)
-
-
         process = subprocess.Popen(mkvMergeCommand, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
         for line in iter(process.stdout.readline, ''):
             print(line.strip())  # For debugging purposes
@@ -172,11 +168,15 @@ class mkvFile():
             if progress is not None:
                 update_progress_bar_callback.emit((self, progress))
         process.stdout.close()
-        process.wait()
+        muxing_status_code = process.wait()
+
+        print(f"Process exited with status code: {muxing_status_code}")
 
         self.audioTracksToRemove.clear()
         self.subtitlesTracksToRemove.clear()
-    
+
+        return (self, muxing_status_code)
+
     def extract_progress(self, output):
         match = re.search(r'Progress:\s*(\d+)%', output)
         if match:

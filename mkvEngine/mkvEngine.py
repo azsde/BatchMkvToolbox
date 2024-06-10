@@ -35,7 +35,7 @@ class WorkerSignals(QObject):
     '''
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
-    result = pyqtSignal(object)
+    result = pyqtSignal(tuple)
     progress = pyqtSignal(tuple)
 
 class Worker(QRunnable):
@@ -86,6 +86,7 @@ class mkvEngine(QObject):
 
     scanFinished = pyqtSignal()
     fileRemuxProgress = pyqtSignal(tuple)
+    fileRemuxFinished = pyqtSignal(tuple)
     outputFileAlreadyExist = pyqtSignal(tuple)
 
     class mkvEngineWorker(QObject):
@@ -231,14 +232,14 @@ class mkvEngine(QObject):
     def startTracksRemoval(self):
         for mkv in self.files_to_process:
             worker = Worker(self.perform_remux, mkv=mkv, remux_progress_callback=self.remux_progress_callback ) # Any other args, kwargs are passed to the run function
-            worker.signals.result.connect(self.print_output)
+            worker.signals.result.connect(self.on_muxing_results)
             worker.signals.finished.connect(self.thread_complete)
             worker.signals.progress.connect(self.remux_progress_callback)
             self.threadpool.start(worker)
 
     def resolve_output_conflict(self, mkv, output_path):
         worker = Worker(self.perform_remux, mkv=mkv, forced_output_path=output_path, remux_progress_callback=self.remux_progress_callback ) # Any other args, kwargs are passed to the run function
-        worker.signals.result.connect(self.print_output)
+        worker.signals.result.connect(self.on_muxing_results)
         worker.signals.finished.connect(self.thread_complete)
         worker.signals.progress.connect(self.remux_progress_callback)
         self.threadpool.start(worker)
@@ -282,17 +283,18 @@ class mkvEngine(QObject):
             outputPath = self.getOutputPath(mkv)
 
         if (outputPath):
-            mkv.mux(outputPath, remux_progress_callback)
+            return mkv.mux(outputPath, remux_progress_callback)
         else:
             print("Couldn't get output path, skipping for now.")
-
+            return((None, None))
 
         #for n in range(0, 5):
         #    time.sleep(1)
         #    remux_progress_callback.emit((mkv, n))
 
-    def print_output(self, s):
-        print(s)
+    def on_muxing_results(self, result):
+        print(f"Muxing ended with {result}")
+        self.fileRemuxFinished.emit(result)
 
     def thread_complete(self):
         print("THREAD COMPLETE!")
