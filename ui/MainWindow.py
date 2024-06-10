@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QMainWindow, QTabWidget, QProgressBar
 from PyQt6 import uic, QtGui
 
+from PyQt6.QtGui import QKeySequence, QAction
+
 from PyQt6.QtCore import Qt
 
 from ui.customLayout.FlowLayout import FlowLayout
@@ -48,6 +50,10 @@ class MainWindow(QMainWindow):
         self.subsCodecsScrollArea.addAction(self.actionDeselect_all_subs_codecs)
 
         #self.processFilesPushButton.clicked.connect(lambda: self.tabWidget.setEnabled(False))
+
+        self.actionOpen_file.setShortcut(QKeySequence.StandardKey.Open)
+        self.actionOpen_folder.setShortcut(QKeySequence("Ctrl+Shift+O"))
+        self.actionClose_current_file_folder.setShortcut(QKeySequence("Ctrl+w"))
 
         self.resize(QtGui.QGuiApplication.primaryScreen().availableGeometry().size() * 0.65)
         self.center()
