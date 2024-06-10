@@ -1,18 +1,92 @@
 import os
+import traceback, sys
+import time
+
 
 from pathlib import Path
-from PyQt6.QtCore import (QObject, QThread, pyqtSignal)
+from PyQt6.QtCore import (QObject, QThread, QRunnable, pyqtSignal, pyqtSlot, QThreadPool)
 from mkvEngine.mkvFile import mkvFile
 from ui.myWidgets import TrackCheckbox
 
-from PyQt6.QtWidgets import QMessageBox
+
 
 from mkvEngine.mkvMergeJsonConstants import *
 from settings.batchMkvToolboxSettings import *
 
+
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
+
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        tuple (exctype, value, traceback.format_exc() )
+
+    result
+        object data returned from processing, anything
+
+    progress
+        int indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(tuple)
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        self.kwargs['remux_progress_callback'] = self.signals.progress
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
 class mkvEngine(QObject):
 
     scanFinished = pyqtSignal()
+    fileRemuxProgress = pyqtSignal(tuple)
+    outputFileAlreadyExist = pyqtSignal(tuple)
 
     class mkvEngineWorker(QObject):
 
@@ -39,54 +113,58 @@ class mkvEngine(QObject):
                 return
             self.finished.emit()
 
+    class tracksCollection(QObject):
+        def __init__(self, remove_forced_tracks=False):
+            self.audio_languages = []
+            self.subs_languages = []
+            self.audio_codecs = []
+            self.subs_codecs = []
+            self.remove_forced_tracks = remove_forced_tracks
+
+        def reset(self):
+            self.audio_languages.clear()
+            self.subs_languages.clear()
+            self.audio_codecs.clear()
+            self.subs_codecs.clear()
+
     def __init__(self, settings):
         super().__init__()
         self.settings = settings
         self.mkvMergePath = settings.getStrParam(batchMkvToolboxSettings.MKV_MERGE_LOCATION_SETTING)
-        self.remove_forced_tracks = settings.getBoolParam(batchMkvToolboxSettings.REMOVE_FORCED_TRACKS_SETTING)
         # Base folder for folder processing
         self.baseFolder = ""
         # List of files to be processed
         self.files_to_process = []
         # List of all available audio languages
-        self.available_audio_languages = []
-        # List of all available subs language
-        self.available_subs_languages = []
-        # List of all available audio codecs
-        self.available_audio_codecs = []
-        # List of all available subs codecs
-        self.available_subs_codecs = []
+        self.available_languages_and_codecs = mkvEngine.tracksCollection()
         # List of tracks to be removed
-        self.audio_languages_to_remove = []
-        self.subs_languages_to_remove = []
-        self.audio_codecs_to_remove = []
-        self.subs_codecs_to_remove = []
+        self.tracks_to_remove = mkvEngine.tracksCollection(settings.getBoolParam(batchMkvToolboxSettings.REMOVE_FORCED_TRACKS_SETTING))
+        self.threadpool = QThreadPool()
+        self.threadpool.setMaxThreadCount(4)
 
     def reset(self):
         self.files_to_process.clear()
-        self.available_audio_languages.clear()
-        self.available_subs_languages.clear()
-        self.available_audio_codecs.clear()
-        self.available_subs_codecs.clear()
-        self.audio_languages_to_remove.clear()
-        self.subs_languages_to_remove.clear()
-        self.audio_codecs_to_remove.clear()
-        self.subs_codecs_to_remove.clear()
+        self.available_languages_and_codecs.reset()
+        self.tracks_to_remove.reset()
 
     def startScan(self, path):
         # 1 - Create a QThread
-        self.objThread = QThread()
+        self.scannerThread = QThread()
         # 2 - Create a Worker
-        self.obj = mkvEngine.mkvEngineWorker(self, path)
+        self.trackScanWorker = mkvEngine.mkvEngineWorker(self, path)
         # 3 - Move the Worker to the QThread
-        self.obj.moveToThread(self.objThread)
+        self.trackScanWorker.moveToThread(self.scannerThread)
         # 4 - Connect the signals
-        self.obj.finished.connect(self.objThread.quit)
-        #self.objThread.started.connect(lambda: self.obj.startScanTracks(path))
-        self.objThread.started.connect(self.obj.startScanTracks)
-        self.objThread.finished.connect(self.scanFinished.emit)
+        self.scannerThread.started.connect(self.trackScanWorker.startScanTracks)
+        self.scannerThread.finished.connect(self.scanFinished.emit)
+
+        # Thread / worker proper "shutdown"
+        self.trackScanWorker.finished.connect(self.scannerThread.quit)
+        self.trackScanWorker.finished.connect(self.trackScanWorker.deleteLater)
+        self.scannerThread.finished.connect(self.scannerThread.deleteLater)
+
         # 5 - Start the QThread
-        self.objThread.start()
+        self.scannerThread.start()
 
     def scanAvailableLanguages(self, file_path):
         print("Processing: " + file_path)
@@ -94,101 +172,135 @@ class mkvEngine(QObject):
 
         self.files_to_process.append(mkv)
         for audioTrack in mkv.getTracksByType(AUDIO_TYPE):
-            if audioTrack.language not in self.available_audio_languages:
-                self.available_audio_languages.append(audioTrack.language)
-            if audioTrack.codec not in self.available_audio_codecs:
-                self.available_audio_codecs.append(audioTrack.codec)
+            if audioTrack.language not in self.available_languages_and_codecs.audio_languages:
+               self.available_languages_and_codecs.audio_languages.append(audioTrack.language)
+            if audioTrack.codec not in self.available_languages_and_codecs.audio_codecs:
+                self.available_languages_and_codecs.audio_codecs.append(audioTrack.codec)
         for subtitlesTrack in mkv.getTracksByType(SUBTITLES_TYPE):
-            if subtitlesTrack.language not in self.available_subs_languages:
-                self.available_subs_languages.append(subtitlesTrack.language)
-            if subtitlesTrack.codec not in self.available_subs_codecs:
-                self.available_subs_codecs.append(subtitlesTrack.codec)
+            if subtitlesTrack.language not in self.available_languages_and_codecs.subs_languages:
+                self.available_languages_and_codecs.subs_languages.append(subtitlesTrack.language)
+            if subtitlesTrack.codec not in self.available_languages_and_codecs.subs_codecs:
+                self.available_languages_and_codecs.subs_codecs.append(subtitlesTrack.codec)
 
-        print("Available audio languages: " + str(self.available_audio_languages))
-        print("Available audio codecs: " + str(self.available_audio_codecs))
-        print("Available subtitles languages: " + str(self.available_subs_languages))
-        print("Available subs codecs: " + str(self.available_subs_codecs))
+        print("Available audio languages: " + str(self.available_languages_and_codecs.audio_languages))
+        print("Available audio codecs: " + str(self.available_languages_and_codecs.audio_codecs))
+        print("Available subtitles languages: " + str(self.available_languages_and_codecs.subs_languages))
+        print("Available subs codecs: " + str(self.available_languages_and_codecs.subs_codecs))
 
     def updateTracksToRemove(self, trackCheckbox):
         match trackCheckbox.type:
             case TrackCheckbox.TYPE_AUDIO_LANGUAGE:
                 if (trackCheckbox.isChecked()):
-                    if (trackCheckbox.text() in self.audio_languages_to_remove):
-                        self.audio_languages_to_remove.remove(trackCheckbox.text())
+                    if (trackCheckbox.text() in self.tracks_to_remove.audio_languages):
+                        self.tracks_to_remove.audio_languages.remove(trackCheckbox.text())
                 else:
-                    if (trackCheckbox.text() not in self.audio_languages_to_remove):
-                        self.audio_languages_to_remove.append(trackCheckbox.text())
+                    if (trackCheckbox.text() not in self.tracks_to_remove.audio_languages):
+                        self.tracks_to_remove.audio_languages.append(trackCheckbox.text())
             case TrackCheckbox.TYPE_SUBS_LANGUAGE:
                 if (trackCheckbox.isChecked()):
-                    if (trackCheckbox.text() in self.subs_languages_to_remove):
-                        self.subs_languages_to_remove.remove(trackCheckbox.text())
+                    if (trackCheckbox.text() in self.tracks_to_remove.subs_languages):
+                        self.tracks_to_remove.subs_languages.remove(trackCheckbox.text())
                 else:
-                    if (trackCheckbox.text() not in self.subs_languages_to_remove):
-                        self.subs_languages_to_remove.append(trackCheckbox.text())
+                    if (trackCheckbox.text() not in self.tracks_to_remove.subs_languages):
+                        self.tracks_to_remove.subs_languages.append(trackCheckbox.text())
             case TrackCheckbox.TYPE_AUDIO_CODEC:
                 if (trackCheckbox.isChecked()):
-                    if (trackCheckbox.text() in self.audio_codecs_to_remove):
-                        self.audio_codecs_to_remove.remove(trackCheckbox.text())
+                    if (trackCheckbox.text() in self.tracks_to_remove.audio_codecs):
+                        self.tracks_to_remove.audio_codecs.remove(trackCheckbox.text())
                 else:
-                    if (trackCheckbox.text() not in self.audio_codecs_to_remove):
-                        self.audio_codecs_to_remove.append(trackCheckbox.text())
+                    if (trackCheckbox.text() not in self.tracks_to_remove.audio_codecs):
+                        self.tracks_to_remove.audio_codecs.append(trackCheckbox.text())
             case TrackCheckbox.TYPE_SUBS_CODEC:
                 if (trackCheckbox.isChecked()):
-                    if (trackCheckbox.text() in self.subs_codecs_to_remove):
-                        self.subs_codecs_to_remove.remove(trackCheckbox.text())
+                    if (trackCheckbox.text() in self.tracks_to_remove.subs_codecs):
+                        self.tracks_to_remove.subs_codecs.remove(trackCheckbox.text())
                 else:
-                    if (trackCheckbox.text() not in self.subs_codecs_to_remove):
-                        self.subs_codecs_to_remove.append(trackCheckbox.text())
+                    if (trackCheckbox.text() not in self.tracks_to_remove.subs_codecs):
+                        self.tracks_to_remove.subs_codecs.append(trackCheckbox.text())
         print("Tracks to be removed : ")
         print("---------------------")
-        print("Audio languages : ", self.audio_languages_to_remove)
-        print("Subs languages : ", self.subs_languages_to_remove)
-        print("Audio codecs : ", self.audio_codecs_to_remove)
-        print("Subs codecs : ", self.subs_codecs_to_remove)
+        print("Audio languages : ", self.tracks_to_remove.audio_languages)
+        print("Subs languages : ", self.tracks_to_remove.subs_languages)
+        print("Audio codecs : ", self.tracks_to_remove.audio_codecs)
+        print("Subs codecs : ", self.tracks_to_remove.subs_codecs)
 
     def setForcedTrackRemoval(self, remove_forced_tracks):
         print(f"setForcedTrackRemoval : {remove_forced_tracks}")
-        self.remove_forced_tracks = remove_forced_tracks
+        self.tracks_to_remove.remove_forced_tracks = remove_forced_tracks
 
-    # TODO: move this to a dedicated thread
     def startTracksRemoval(self):
         for mkv in self.files_to_process:
-            track_ids_to_remove = []
+            worker = Worker(self.perform_remux, mkv=mkv, remux_progress_callback=self.remux_progress_callback ) # Any other args, kwargs are passed to the run function
+            worker.signals.result.connect(self.print_output)
+            worker.signals.finished.connect(self.thread_complete)
+            worker.signals.progress.connect(self.remux_progress_callback)
+            self.threadpool.start(worker)
 
-            audioTracks = mkv.getTracksByType(AUDIO_TYPE)
-            subtitlesTracks = mkv.getTracksByType(SUBTITLES_TYPE)
+    def resolve_output_conflict(self, mkv, output_path):
+        worker = Worker(self.perform_remux, mkv=mkv, forced_output_path=output_path, remux_progress_callback=self.remux_progress_callback ) # Any other args, kwargs are passed to the run function
+        worker.signals.result.connect(self.print_output)
+        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.progress.connect(self.remux_progress_callback)
+        self.threadpool.start(worker)
 
+    def perform_remux(self, mkv, remux_progress_callback, forced_output_path=""):
+        print(f"Working on : {mkv.filepath}")
+
+        track_ids_to_remove = []
+
+        audioTracks = mkv.getTracksByType(AUDIO_TYPE)
+        subtitlesTracks = mkv.getTracksByType(SUBTITLES_TYPE)
+
+        for audioTrack in audioTracks:
             for audioTrack in audioTracks:
-                for audioTrack in audioTracks:
-                    if audioTrack.language in self.audio_languages_to_remove:
-                        print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: language {audioTrack.language}")
-                        track_ids_to_remove.append(audioTrack.id)
-                    elif audioTrack.codec in self.audio_codecs_to_remove:
-                        print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: codec {audioTrack.codec}")
-                        track_ids_to_remove.append(audioTrack.id)
+                if audioTrack.language in self.tracks_to_remove.audio_languages:
+                    print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: language {audioTrack.language}")
+                    track_ids_to_remove.append(audioTrack.id)
+                elif audioTrack.codec in self.tracks_to_remove.audio_codecs:
+                    print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: codec {audioTrack.codec}")
+                    track_ids_to_remove.append(audioTrack.id)
 
-            for subtitlesTrack in subtitlesTracks:
-                if subtitlesTrack.language in self.subs_languages_to_remove:
-                    print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: language {subtitlesTrack.language}")
-                    track_ids_to_remove.append(subtitlesTrack.id)
-                elif subtitlesTrack.codec in self.subs_codecs_to_remove:
-                    print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: codec {subtitlesTrack.codec}")
-                    track_ids_to_remove.append(subtitlesTrack.id)
-                elif self.remove_forced_tracks and subtitlesTrack.forced:
-                    print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: forced track")
-                    track_ids_to_remove.append(subtitlesTrack.id)
+        for subtitlesTrack in subtitlesTracks:
+            if subtitlesTrack.language in self.tracks_to_remove.subs_languages:
+                print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: language {subtitlesTrack.language}")
+                track_ids_to_remove.append(subtitlesTrack.id)
+            elif subtitlesTrack.codec in self.tracks_to_remove.subs_codecs:
+                print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: codec {subtitlesTrack.codec}")
+                track_ids_to_remove.append(subtitlesTrack.id)
+            elif self.tracks_to_remove.remove_forced_tracks and subtitlesTrack.forced:
+                print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: forced track")
+                track_ids_to_remove.append(subtitlesTrack.id)
+#
+#
+        print("MkvFile : ", mkv.filepath)
+        for track_id_to_remove in track_ids_to_remove:
+            mkv.removeTrack(track_id_to_remove)
 
-
-            print("MkvFile : ", mkv.filepath)
-            for track_id_to_remove in track_ids_to_remove:
-                mkv.removeTrack(track_id_to_remove)
+        if forced_output_path:
+            outputPath = forced_output_path
+        else:
             outputPath = self.getOutputPath(mkv)
-            if (outputPath):
-                mkv.mux(outputPath)
-            print("Done")
+
+        if (outputPath):
+            mkv.mux(outputPath, remux_progress_callback)
+        else:
+            print("Couldn't get output path, skipping for now.")
+
+
+        #for n in range(0, 5):
+        #    time.sleep(1)
+        #    remux_progress_callback.emit((mkv, n))
+
+    def print_output(self, s):
+        print(s)
+
+    def thread_complete(self):
+        print("THREAD COMPLETE!")
+
+    def remux_progress_callback(self, tuple):
+        self.fileRemuxProgress.emit(tuple)
 
     def getOutputPath(self, mkvFile):
-        print("==========================")
         outputPath = ""
         outputFileSetting = self.settings.getIntParam(batchMkvToolboxSettings.OUTPUT_FILE_SETTING)
         match outputFileSetting:
@@ -224,39 +336,9 @@ class mkvEngine(QObject):
 
         if os.path.exists(outputPath):
             print("Output file already exists, prompting the user...")
-            outputPath = self.openExistingFileDialog(mkvFile, outputPath, outputFileSetting)
-            print("Final output path : ", str(outputPath))
-        print("==========================")
+            self.outputFileAlreadyExist.emit((mkvFile, outputPath))
+            return None
+            #outputPath = self.openExistingFileDialog(mkvFile, outputPath, outputFileSetting)
+            #print("Final output path : ", str(outputPath))
         return outputPath
 
-    # When a file already exist at the output location, open a dialog to ask the user what do to.
-    # Parameters:
-    # - mkvFile : the mkvFile to be processed
-    # - outputPath : the output path the output file is supposed to be placed at.
-    def openExistingFileDialog(self, mkvFile, outputPath, outputFileSetting):
-        print("openExistingFileDialog")
-        dlg = QMessageBox()
-        dlg.setWindowTitle("Output file already exists.")
-        dlg.setText("The output file " + str(outputPath) + " already exists.\nWhat do you wish to do ?")
-        renameBtn = dlg.addButton("Rename new file", QMessageBox.ButtonRole.YesRole)
-        skipBtn = dlg.addButton("Skip file", QMessageBox.ButtonRole.YesRole)
-        overwriteBtn = dlg.addButton("Overwrite existing file", QMessageBox.ButtonRole.YesRole)
-        dlg.setIcon(QMessageBox.Icon.Warning)
-        dlg.setDefaultButton(renameBtn)
-        dlg.exec()
-        # BUG WITH THE RENAME FEATURE, DOESN'T PLACE THE OUTPUT FILE IN THE CORRECT FOLDER
-        if dlg.clickedButton() == renameBtn:
-            tryNumber = 1
-            while os.path.exists(outputPath):
-                # Append "REMUX" only if the output file setting is set to batchMkvToolboxSettings.OUTPUT_FILE_IN_SAME_FOLDER_AS_ORIGINAL
-                if (outputFileSetting == batchMkvToolboxSettings.OUTPUT_FILE_IN_SAME_FOLDER_AS_ORIGINAL):
-                    filename = Path(mkvFile.filepath).stem + "-REMUX(" + str(tryNumber)+").mkv"
-                else:
-                    filename = Path(mkvFile.filepath).stem + "(" + str(tryNumber)+").mkv"
-                outputPath = os.path.join(Path(outputPath).parent.absolute(), filename)
-                tryNumber += 1
-        elif dlg.clickedButton() == skipBtn:
-            outputPath = ""
-        elif dlg.clickedButton() == overwriteBtn:
-            print("Warning: " + outputPath + " will be overwritten.")
-        return outputPath

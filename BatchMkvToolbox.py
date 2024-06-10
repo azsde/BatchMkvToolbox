@@ -6,14 +6,16 @@ from ui.customLayout import FlowLayout
 
 from functools import partial
 
-from PyQt6 import QtWidgets
-from PyQt6.QtWidgets import QFileDialog, QApplication, QLabel
+from PyQt6.QtWidgets import QFileDialog, QApplication, QMessageBox, QLabel
+from pathlib import Path
 
 
 from PyQt6.QtCore import Qt
 
 from ui.customLayout.FlowLayout import FlowLayout
+from ui.MkvFileWidget import MkvFileWidget
 
+import os
 import sys
 
 from ui.MainWindow import MainWindow
@@ -24,6 +26,9 @@ class BatchMkvToolbox:
         self.sourcePath = ""
         #self.audio_tracks_checkboxes = []
         #self.subs_tracks_checkboxes = []
+
+        # Mapping between files and their progress bars
+        self.files_progress_bars = {}
 
     def openFileNameDialog(self):
         self.sourcePath, _ = QFileDialog.getOpenFileName(None,"Select a file", "","Mkv files (*.mkv)")
@@ -73,7 +78,7 @@ class BatchMkvToolbox:
         MainWindow.tabWidget.setVisible(True)
         MainWindow.welcomeFrame.setVisible(False)
 
-        for audioLanguage in mkv_engine.available_audio_languages:
+        for audioLanguage in mkv_engine.available_languages_and_codecs.audio_languages:
             cb = TrackCheckbox()
             cb.setText(audioLanguage)
             cb.setChecked(True)
@@ -83,7 +88,7 @@ class BatchMkvToolbox:
             cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.audioLanguagesFlowLayout.addWidget(cb)
 
-        for audioCodecs in mkv_engine.available_audio_codecs:
+        for audioCodecs in mkv_engine.available_languages_and_codecs.audio_codecs:
             cb = TrackCheckbox()
             cb.setText(audioCodecs)
             cb.setChecked(True)
@@ -93,7 +98,7 @@ class BatchMkvToolbox:
             cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.audioCodecsFlowLayout.addWidget(cb)
 
-        for subsLanguage in mkv_engine.available_subs_languages:
+        for subsLanguage in mkv_engine.available_languages_and_codecs.subs_languages:
             cb = TrackCheckbox()
             cb.setText(subsLanguage)
             cb.setChecked(True)
@@ -103,7 +108,7 @@ class BatchMkvToolbox:
             cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.subsLanguagesFlowLayout.addWidget(cb)
 
-        for subsCodec in mkv_engine.available_subs_codecs:
+        for subsCodec in mkv_engine.available_languages_and_codecs.subs_codecs:
             cb = TrackCheckbox()
             cb.setText(subsCodec)
             cb.setChecked(True)
@@ -113,12 +118,15 @@ class BatchMkvToolbox:
             cb.stateChanged.connect(partial(self.onTrackCheckboxStateChanged, cb))
             MainWindow.subsCodecsFlowLayout.addWidget(cb)
 
-        filesToProcess = []
-        for mkv in mkv_engine.files_to_process:
-            filesToProcess.append(mkv.filepath)
-        filesToProcess = sorted(filesToProcess)
-        for filepath in filesToProcess:
-            MainWindow.filesToProcessVerticalLayout.addWidget(QLabel(filepath))
+        filesToProcess = sorted(mkv_engine.files_to_process, key=lambda x: x.filepath)
+        #for mkv in filesToProcess:
+        #    label_width = QLabel(mkv.filepath).fontMetrics().boundingRect(mkv.filepath).width()
+        #    max_label_width = (int)(max(max_label_width, label_width)*0.75)
+        for mkv in filesToProcess:
+            #MainWindow.filesToProcessVerticalLayout.addWidget(mkv.filepath)
+            widget = MkvFileWidget(mkv.filepath)
+            self.files_progress_bars[mkv] = widget
+            MainWindow.filesToProcessVerticalLayout.addWidget(widget)
 
     def onTrackCheckboxStateChanged(self, checkbox):
         #if checkbox.isChecked():
@@ -155,6 +163,57 @@ class BatchMkvToolbox:
             MainWindow.subsCodecsFlowLayout.itemAt(i).widget().deleteLater()
         for i in reversed(range(MainWindow.filesToProcessVerticalLayout.count())):
             MainWindow.filesToProcessVerticalLayout.itemAt(i).widget().deleteLater()
+
+        self.files_progress_bars.clear()
+
+    def update_remux_progress(self, tuple):
+        mkv = tuple[0]
+        progress = tuple[1]
+
+        widget = self.files_progress_bars[mkv]
+        widget.update_progress(progress)
+        #print(f"Todo : Update progress UI: {tuple[0].filepath} - {tuple[1]}%")
+
+    def output_file_alread_exist_prompt(self, tuple):
+        mkvFile = tuple[0]
+        initial_output_file = tuple[1]
+        outputPath = self.openExistingFileDialog(mkvFile, initial_output_file, settings.getIntParam(batchMkvToolboxSettings.OUTPUT_FILE_SETTING))
+        if outputPath:
+            mkv_engine.resolve_output_conflict(mkvFile, outputPath)
+        print(f"Output path on conflict: {outputPath}")
+
+
+    # When a file already exist at the output location, open a dialog to ask the user what do to.
+    # Parameters:
+    # - mkvFile : the mkvFile to be processed
+    # - outputPath : the output path the output file is supposed to be placed at.
+    def openExistingFileDialog(self, mkvFile, outputPath, outputFileSetting):
+        print("openExistingFileDialog")
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Output file already exists.")
+        dlg.setText("The output file " + str(outputPath) + " already exists.\nWhat do you wish to do ?")
+        renameBtn = dlg.addButton("Rename new file", QMessageBox.ButtonRole.YesRole)
+        skipBtn = dlg.addButton("Skip file", QMessageBox.ButtonRole.YesRole)
+        overwriteBtn = dlg.addButton("Overwrite existing file", QMessageBox.ButtonRole.YesRole)
+        dlg.setIcon(QMessageBox.Icon.Warning)
+        dlg.setDefaultButton(renameBtn)
+        dlg.exec()
+        # BUG WITH THE RENAME FEATURE, DOESN'T PLACE THE OUTPUT FILE IN THE CORRECT FOLDER
+        if dlg.clickedButton() == renameBtn:
+            tryNumber = 1
+            while os.path.exists(outputPath):
+                # Append "REMUX" only if the output file setting is set to batchMkvToolboxSettings.OUTPUT_FILE_IN_SAME_FOLDER_AS_ORIGINAL
+                if (outputFileSetting == batchMkvToolboxSettings.OUTPUT_FILE_IN_SAME_FOLDER_AS_ORIGINAL):
+                    filename = Path(mkvFile.filepath).stem + "-REMUX(" + str(tryNumber)+").mkv"
+                else:
+                    filename = Path(mkvFile.filepath).stem + "(" + str(tryNumber)+").mkv"
+                outputPath = os.path.join(Path(outputPath).parent.absolute(), filename)
+                tryNumber += 1
+        elif dlg.clickedButton() == skipBtn:
+            outputPath = ""
+        elif dlg.clickedButton() == overwriteBtn:
+            print("Warning: " + outputPath + " will be overwritten.")
+        return outputPath
 
 # Method to simulate a MKV with lots of tracks
 def fakeContent():
@@ -236,7 +295,7 @@ if __name__ == "__main__":
     MainWindow.show()
 
     settings = batchMkvToolboxSettings()
-    
+
     # Init the remove forced subs checkbox
     MainWindow.remove_forced_subs_checkbox.setChecked(settings.getBoolParam(batchMkvToolboxSettings.REMOVE_FORCED_TRACKS_SETTING))
 
@@ -247,5 +306,7 @@ if __name__ == "__main__":
     # Create MKV engine and connect it to the batch mkv toolbox
     mkv_engine = mkvEngine(settings)
     mkv_engine.scanFinished.connect(batchMkvToolbox.onScanCompleted)
+    mkv_engine.fileRemuxProgress.connect(batchMkvToolbox.update_remux_progress)
+    mkv_engine.outputFileAlreadyExist.connect(batchMkvToolbox.output_file_alread_exist_prompt)
     #fakeContent()
     sys.exit(app.exec())

@@ -1,5 +1,6 @@
 import orjson
 import subprocess
+import re
 
 from pathlib import Path
 
@@ -17,6 +18,7 @@ class mkvFile():
             mkvMerge (str): the path to the mkvMerge binary file.
         """
         self.filepath = filepath
+        self.outputPath = None
         self.mkvMerge = mkvMerge
         self.rawData = self.getRawJsonData()
         self.jsonData = orjson.loads(self.rawData)
@@ -66,7 +68,6 @@ class mkvFile():
                     return jsonTrackData[TYPE_TAG]
         return "Undefined"
 
-
     def isTrackIdValid(self, trackId):
         """Check whether or not a track is valid based on its ID.
 
@@ -115,7 +116,7 @@ class mkvFile():
 
         # MKV Merge command is weird in case of track removal here's the format:
         # mkvmerge -o /output/path -s !subId1,subId2...subIdx -a !audioId1, audioId2...audioIdX /path/to/inputfile
-        mkvMergeCommand = [self.mkvMerge, '-o', outputPath]
+        mkvMergeCommand = [self.mkvMerge, '--ui-language', 'en','-o', outputPath]
 
         # Create parent folder if needed
         Path(Path(outputPath).parent.absolute()).mkdir(parents=True, exist_ok=True)
@@ -148,7 +149,7 @@ class mkvFile():
         mkvMergeCommand.append(self.filepath)
         return mkvMergeCommand
 
-    def mux(self, outputPath):
+    def mux(self, outputPath, update_progress_bar_callback):
         """Muxes the file to the given output path, removing marked tracks in the process.
         Args:
             outputPath (str): The complete output path where to store the muxed mkv file.
@@ -163,8 +164,24 @@ class mkvFile():
         # TODO : parse the progress and figure a way to display it somewere
         output = subprocess.check_output(mkvMergeCommand)
 
+
+        process = subprocess.Popen(mkvMergeCommand, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+        for line in iter(process.stdout.readline, ''):
+            print(line.strip())  # For debugging purposes
+            progress = self.extract_progress(line)
+            if progress is not None:
+                update_progress_bar_callback.emit((self, progress))
+        process.stdout.close()
+        process.wait()
+
         self.audioTracksToRemove.clear()
         self.subtitlesTracksToRemove.clear()
+    
+    def extract_progress(self, output):
+        match = re.search(r'Progress:\s*(\d+)%', output)
+        if match:
+            return int(match.group(1))
+        return None
 
 class myMkvTrack():
     """Class representing a track from a mkvFile
