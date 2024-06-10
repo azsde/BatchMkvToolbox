@@ -30,9 +30,7 @@ class BatchMkvToolbox:
         if self.sourcePath:
             print("Opening file: ", self.sourcePath)
 
-            # Reset the mkv engine
-            mkv_engine.reset()
-            batchMkvToolbox.clear()
+            batchMkvToolbox.reset()
 
             # Update the UI
             MainWindow.tabWidget.setVisible(False)
@@ -48,9 +46,7 @@ class BatchMkvToolbox:
         if self.sourcePath:
             print("Opening folder: ", self.sourcePath)
 
-            # Reset the mkv engine
-            mkv_engine.reset()
-            batchMkvToolbox.clear()
+            batchMkvToolbox.reset()
 
             # Update the UI
             MainWindow.tabWidget.setVisible(False)
@@ -62,7 +58,7 @@ class BatchMkvToolbox:
             mkv_engine.startScan(self.sourcePath)
 
     def closeCurrentSession(self):
-        self.clear()
+        self.reset()
         MainWindow.tabWidget.setVisible(False)
         MainWindow.welcomeFrame.setVisible(True)
         MainWindow.mkvParsingProgressbar.setVisible(False)
@@ -144,7 +140,11 @@ class BatchMkvToolbox:
         for i in range(targetFlowLayout.count()):
             targetFlowLayout.itemAt(i).widget().setChecked(isChecked)
 
-    def clear(self):
+    def reset(self):
+        # Reset the mkv engine
+        mkv_engine.reset()
+
+        # Clear the UI
         for i in reversed(range(MainWindow.audioLanguagesFlowLayout.count())):
             MainWindow.audioLanguagesFlowLayout.itemAt(i).widget().deleteLater()
         for i in reversed(range(MainWindow.subsLanguagesFlowLayout.count())):
@@ -153,6 +153,8 @@ class BatchMkvToolbox:
             MainWindow.audioCodecsFlowLayout.itemAt(i).widget().deleteLater()
         for i in reversed(range(MainWindow.subsCodecsFlowLayout.count())):
             MainWindow.subsCodecsFlowLayout.itemAt(i).widget().deleteLater()
+        for i in reversed(range(MainWindow.filesToProcessVerticalLayout.count())):
+            MainWindow.filesToProcessVerticalLayout.itemAt(i).widget().deleteLater()
 
 # Method to simulate a MKV with lots of tracks
 def fakeContent():
