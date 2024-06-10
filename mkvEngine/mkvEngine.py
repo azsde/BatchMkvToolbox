@@ -87,6 +87,7 @@ class mkvEngine(QObject):
     scanFinished = pyqtSignal()
     fileRemuxProgress = pyqtSignal(tuple)
     fileRemuxFinished = pyqtSignal(tuple)
+    allFilesProcessed = pyqtSignal()
     outputFileAlreadyExist = pyqtSignal(tuple)
 
     class mkvEngineWorker(QObject):
@@ -297,7 +298,10 @@ class mkvEngine(QObject):
         self.fileRemuxFinished.emit(result)
 
     def thread_complete(self):
-        print("THREAD COMPLETE!")
+        # Get the number of active threads
+        if self.threadpool.activeThreadCount() == 0:
+            self.allFilesProcessed.emit()
+
 
     def remux_progress_callback(self, tuple):
         self.fileRemuxProgress.emit(tuple)

@@ -119,11 +119,7 @@ class BatchMkvToolbox:
             MainWindow.subsCodecsFlowLayout.addWidget(cb)
 
         filesToProcess = sorted(mkv_engine.files_to_process, key=lambda x: x.filepath)
-        #for mkv in filesToProcess:
-        #    label_width = QLabel(mkv.filepath).fontMetrics().boundingRect(mkv.filepath).width()
-        #    max_label_width = (int)(max(max_label_width, label_width)*0.75)
         for mkv in filesToProcess:
-            #MainWindow.filesToProcessVerticalLayout.addWidget(mkv.filepath)
             widget = MkvFileWidget(mkv.filepath)
             self.files_progress_bars[mkv] = widget
             MainWindow.filesToProcessVerticalLayout.addWidget(widget)
@@ -230,6 +226,10 @@ class BatchMkvToolbox:
             print("Warning: " + outputPath + " will be overwritten.")
         return outputPath
 
+    def start_processing(self):
+        MainWindow.processFilesPushButton.setEnabled(False)
+        mkv_engine.startTracksRemoval()
+
 # Method to simulate a MKV with lots of tracks
 def fakeContent():
     MainWindow.tabWidget.setVisible(True)
@@ -299,8 +299,8 @@ def connectUiSignals():
 
     MainWindow.remove_forced_subs_checkbox.stateChanged.connect(lambda state: mkv_engine.setForcedTrackRemoval(MainWindow.remove_forced_subs_checkbox.isChecked()))
 
-    # Process files
-    MainWindow.processFilesPushButton.clicked.connect(lambda: mkv_engine.startTracksRemoval())
+    # Process files (disable button until finished)
+    MainWindow.processFilesPushButton.clicked.connect(lambda: batchMkvToolbox.start_processing())
 
 if __name__ == "__main__":
     # Create app
@@ -324,5 +324,6 @@ if __name__ == "__main__":
     mkv_engine.fileRemuxProgress.connect(batchMkvToolbox.update_remux_progress)
     mkv_engine.fileRemuxFinished.connect(batchMkvToolbox.handle_remux_ended)
     mkv_engine.outputFileAlreadyExist.connect(batchMkvToolbox.output_file_alread_exist_prompt)
+    mkv_engine.allFilesProcessed.connect(lambda: MainWindow.processFilesPushButton.setEnabled(True))
     #fakeContent()
     sys.exit(app.exec())
