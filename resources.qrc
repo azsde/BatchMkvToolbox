@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/res">
+    <file alias="icon-open-file">res/icons/file.png</file>
+    <file alias="icon-open-folder">res/icons/folder.png</file>
+    <file alias="icon-close">res/icons/close-folder.png</file>
+    <file alias="icon-exit">res/icons/exit.png</file>
+    <file alias="icon-settings">res/icons/gear.png</file>
+    <file alias="icon-about">res/icons/information.png</file>
+</qresource>
+</RCC>

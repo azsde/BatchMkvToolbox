@@ -2,21 +2,20 @@ from mkvEngine.mkvEngine import mkvEngine
 from settings.batchMkvToolboxSettings import batchMkvToolboxSettings
 from ui.PrefDialog import PrefDialog
 from ui.myWidgets import TrackCheckbox
-from ui.customLayout import FlowLayout
+
 
 from functools import partial
 
-from PyQt6.QtWidgets import QFileDialog, QApplication, QMessageBox, QLabel
+from PyQt6.QtWidgets import QFileDialog, QApplication, QMessageBox, QPushButton
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QDesktopServices
 from pathlib import Path
 
-
-from PyQt6.QtCore import Qt
-
-from ui.customLayout.FlowLayout import FlowLayout
 from ui.MkvFileWidget import MkvFileWidget
 
 import os
 import sys
+
 
 from ui.MainWindow import MainWindow
 
@@ -71,6 +70,18 @@ class BatchMkvToolbox:
 
     def openPreferencesDialog(self):
         PrefDialog(settings).exec()
+
+    def openAboutDialog(self):
+        msg = QMessageBox()
+        msg.setWindowTitle("About BatchMkvToolBox")
+        msg.setText("This project was born out of my passion for managing and optimizing my ever growing media collection and I figured it could be useful to other people too ! :-)\n\nI work on this project on my free time, if you find this app useful and would like to support its development, you can contribute by donating.\n\nYour support will enable me to dedicate more time and resources to enhance and maintain the app.\n\nHave a nice day ! :-)")
+
+        maybe_later_button = QPushButton("Maybe later")
+        donate_button = QPushButton("Donate")
+        donate_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://buymeacoffee.com/azsde")))
+        msg.addButton(donate_button, QMessageBox.ButtonRole.RejectRole)
+        msg.addButton(maybe_later_button, QMessageBox.ButtonRole.ActionRole)
+        msg.exec()
 
     # onScanCompleted, populate UI
     def onScanCompleted(self):
@@ -283,6 +294,8 @@ def connectUiSignals():
     MainWindow.actionClose_current_file_folder.triggered.connect(lambda: batchMkvToolbox.closeCurrentSession())
 
     MainWindow.actionPreferences.triggered.connect(lambda: batchMkvToolbox.openPreferencesDialog())
+
+    MainWindow.actionAbout.triggered.connect(lambda: batchMkvToolbox.openAboutDialog())
 
     # Exit
     MainWindow.actionExit.triggered.connect(lambda: sys.exit())

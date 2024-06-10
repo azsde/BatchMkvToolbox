@@ -1,11 +1,13 @@
 from PyQt6.QtWidgets import QMainWindow, QTabWidget, QProgressBar
 from PyQt6 import uic, QtGui
 
-from PyQt6.QtGui import QKeySequence, QAction
-
+from PyQt6.QtGui import QKeySequence, QAction, QIcon
 from PyQt6.QtCore import Qt
 
 from ui.customLayout.FlowLayout import FlowLayout
+
+import resources
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -54,6 +56,16 @@ class MainWindow(QMainWindow):
         self.actionOpen_file.setShortcut(QKeySequence.StandardKey.Open)
         self.actionOpen_folder.setShortcut(QKeySequence("Ctrl+Shift+O"))
         self.actionClose_current_file_folder.setShortcut(QKeySequence("Ctrl+w"))
+
+        self.actionAbout.setShortcut(QKeySequence("?"))
+
+        # Set icons
+        self.actionOpen_file.setIcon(QIcon(':/res/icon-open-file'))
+        self.actionOpen_folder.setIcon(QIcon(':/res/icon-open-folder'))
+        self.actionClose_current_file_folder.setIcon(QIcon(':/res/icon-close'))
+        self.actionPreferences.setIcon(QIcon(':/res/icon-settings'))
+        self.actionAbout.setIcon(QIcon(':/res/icon-about'))
+        self.actionExit.setIcon(QIcon(':/res/icon-exit'))
 
         self.resize(QtGui.QGuiApplication.primaryScreen().availableGeometry().size() * 0.65)
         self.center()
