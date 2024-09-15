@@ -99,7 +99,7 @@ class FlowLayout(QLayout):
         return None
 
     def expandingDirections(self):
-        return Qt.Orientations(Qt.Orientation(0))
+        return Qt.Orientation(Qt.Orientation(0))
 
     def hasHeightForWidth(self):
         return True
@@ -249,4 +249,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWin = Window()
     mainWin.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
