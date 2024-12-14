@@ -255,13 +255,12 @@ class mkvEngine(QObject):
         subtitlesTracks = mkv.getTracksByType(SUBTITLES_TYPE)
 
         for audioTrack in audioTracks:
-            for audioTrack in audioTracks:
-                if audioTrack.language in self.tracks_to_remove.audio_languages:
-                    print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: language {audioTrack.language}")
-                    track_ids_to_remove.append(audioTrack.id)
-                elif audioTrack.codec in self.tracks_to_remove.audio_codecs:
-                    print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: codec {audioTrack.codec}")
-                    track_ids_to_remove.append(audioTrack.id)
+            if audioTrack.language in self.tracks_to_remove.audio_languages:
+                print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: language {audioTrack.language}")
+                track_ids_to_remove.append(audioTrack.id)
+            elif audioTrack.codec in self.tracks_to_remove.audio_codecs:
+                print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: codec {audioTrack.codec}")
+                track_ids_to_remove.append(audioTrack.id)
 
         for subtitlesTrack in subtitlesTracks:
             if subtitlesTrack.language in self.tracks_to_remove.subs_languages:
