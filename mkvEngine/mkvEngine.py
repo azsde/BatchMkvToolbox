@@ -128,6 +128,7 @@ class mkvEngine(QObject):
             self.subs_languages.clear()
             self.audio_codecs.clear()
             self.subs_codecs.clear()
+            self.remove_forced_tracks = False
 
     def __init__(self, settings):
         super().__init__()
