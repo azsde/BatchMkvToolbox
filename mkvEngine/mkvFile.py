@@ -199,7 +199,7 @@ class myMkvTrack():
         else:
             self.name = ""
         self.type = jsonTrackData[TYPE_TAG]
-        self.language = jsonTrackData[PROPERTIES_TAG][LANGUAGE_TAG]
+        self.language = jsonTrackData[PROPERTIES_TAG][LANGUAGE_TAG] + " (" + jsonTrackData[PROPERTIES_TAG][LANGUAGE_IETF] + ")"
         self.codec =  jsonTrackData[CODEC_TAG]
         self.forced = jsonTrackData[PROPERTIES_TAG][FORCED_TRACK_TAG]
 
