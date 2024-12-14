@@ -122,6 +122,7 @@ class mkvEngine(QObject):
             self.audio_codecs = []
             self.subs_codecs = []
             self.remove_forced_tracks = remove_forced_tracks
+            self.unwanted_string_in_title = ""
 
         def reset(self):
             self.audio_languages.clear()
@@ -129,6 +130,7 @@ class mkvEngine(QObject):
             self.audio_codecs.clear()
             self.subs_codecs.clear()
             self.remove_forced_tracks = False
+            self.unwanted_string_in_title = ""
 
     def __init__(self, settings):
         super().__init__()
@@ -231,6 +233,9 @@ class mkvEngine(QObject):
         print(f"setForcedTrackRemoval : {remove_forced_tracks}")
         self.tracks_to_remove.remove_forced_tracks = remove_forced_tracks
 
+    def setUnwantedStringInTitle(self, unwanted_string):
+        self.tracks_to_remove.unwanted_string_in_title = unwanted_string
+
     def startTracksRemoval(self):
         for mkv in self.files_to_process:
             worker = Worker(self.perform_remux, mkv=mkv, remux_progress_callback=self.remux_progress_callback ) # Any other args, kwargs are passed to the run function
@@ -261,6 +266,10 @@ class mkvEngine(QObject):
             elif audioTrack.codec in self.tracks_to_remove.audio_codecs:
                 print(f"Audio track {audioTrack.language} ({audioTrack.id}) matches removal condition: codec {audioTrack.codec}")
                 track_ids_to_remove.append(audioTrack.id)
+            # TODO: Enable track removal per substring in title
+            # elif self.tracks_to_remove.unwanted_string_in_title in audioTrack.name:
+                #print(f"Audio track {audioTrack.name} ({audioTrack.id}) matches removal condition: title contains {self.tracks_to_remove.unwanted_string_in_title}")
+                #track_ids_to_remove.append(audioTrack.id)
 
         for subtitlesTrack in subtitlesTracks:
             if subtitlesTrack.language in self.tracks_to_remove.subs_languages:
@@ -272,8 +281,11 @@ class mkvEngine(QObject):
             elif self.tracks_to_remove.remove_forced_tracks and subtitlesTrack.forced:
                 print(f"Subs track {subtitlesTrack.language} ({subtitlesTrack.id}) matches removal condition: forced track")
                 track_ids_to_remove.append(subtitlesTrack.id)
-#
-#
+            # TODO: Enable track removal per substring in title
+            # elif self.tracks_to_remove.unwanted_string_in_title in subtitlesTrack.name:
+            #    print(f"Subs track {subtitlesTrack.name} ({subtitlesTrack.id}) matches removal condition: title contains {self.tracks_to_remove.unwanted_string_in_title}")
+            #    track_ids_to_remove.append(subtitlesTrack.id)
+
         print("MkvFile : ", mkv.filepath)
         for track_id_to_remove in track_ids_to_remove:
             mkv.removeTrack(track_id_to_remove)
